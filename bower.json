@@ -14,7 +14,7 @@
 		}
 	],
 	"license": "MIT",
-	"homepage": "https://bitbucket.org/scoletti/itaca-ng-services#readme",
+	"homepage": "https://bitbucket.org/chromaitaly/itaca-ng-services#readme",
 	"ignore": [
 		"**/.*",
 		"node_modules",
