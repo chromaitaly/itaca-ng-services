@@ -35,6 +35,7 @@
 		"angular-dynamic-locale": "~0.1.32",
 		"angular-moment": "~1.0.1",
 		"angular-local-storage": "~0.7.1",
-		"lodash": "latest"
+		"lodash": "latest",
+		"itaca-ng-utils": "latest"
 	}
 }
