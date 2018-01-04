@@ -12,14 +12,14 @@
     	var $$service = {};
     	
     	$$service.start = function(opts) {
-    		if (!$$service.$$loadingEl) {
+    		if (!$$service.$$loadingScope) {
     			var scope = {data: opts, active: true};
     			
     			var el = "<ch-loading-progress ng-if=\"data.active\" message=\"data.message\" message-key=\"data.messageKey\" " +
     					"error-message=\"data.error ? data.errorMessage : ''\" error-message-key=\"data.error ? data.errorMessageKey : ''\" " +
-    					"hide-siblings=\"data.active\"></ch-loading-progress>";
+    					"hide-siblings=\"active\"></ch-loading-progress>";
     			
-    			$$service.$$loadingEl = HtmlUtils.addElement(el, scope, null, true);
+    			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
     		} else {
     			$$service.updateOpts({data: opts});
@@ -40,8 +40,8 @@
     			return;
     		}
     		
-    		if ($$service.$$loadingEl) {
-    			_.assign($$service.$$loadingEl.scope(), opts);
+    		if ($$service.$$loadingScope) {
+    			_.assign($$service.$$loadingScope, opts);
     		}
     	};
     	
