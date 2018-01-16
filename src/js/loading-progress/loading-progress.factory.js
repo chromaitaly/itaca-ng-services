@@ -13,11 +13,12 @@
     	
     	$$service.start = function(opts) {
     		if (!$$service.$$loadingScope) {
-    			var scope = {data: opts, active: true};
+    			var scope = {$ctrl: angular.merge({}, opts, {active: true})};
     			
-    			var el = "<ch-loading-progress ng-if=\"data.active\" message=\"data.message\" message-key=\"data.messageKey\" " +
-    					"error-message=\"data.error ? data.errorMessage : ''\" error-message-key=\"data.error ? data.errorMessageKey : ''\" " +
-    					"hide-siblings=\"active\"></ch-loading-progress>";
+    			var el = "<ch-loading-progress ng-if=\"$ctrl.active\" message=\"$ctrl.message\" message-key=\"$ctrl.messageKey\" " +
+    					"error-message=\"$ctrl.error ? $ctrl.errorMessage : ''\" error-message-key=\"$ctrl.error ? $ctrl.errorMessageKey : ''\" " +
+    					"icon-class=\"{{$ctrl.iconClass}}\" error-icon-class=\"{{$ctrl.errorIconClass}}\" " +
+    					"hide-siblings=\"$ctrl.active\" animation-class=\"animated fadeIn\"></ch-loading-progress>";
     			
     			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
@@ -26,23 +27,34 @@
     		}
     	};
     	
-    	$$service.stop = function(error, delay) {
-    		$$service.updateOpts({error: _.isBoolean(error) ? error : !_.isNil(error)});
-    		
+    	$$service.stop = function(delay) {
     		$timeout(function() {
     			$$service.updateOpts({active: false});
+    			$$service.$$loadingScope = undefined;
     			
-    		}, delay || 0);
+    		}, _.isFinite(delay) ? delay : 0);
     	};
     	
-    	$$service.updateOpts = function(opts) {
+    	$$service.updateOpts = function(opts, delay) {
     		if (!_.isPlainObject(opts)) {
     			return;
     		}
     		
-    		if ($$service.$$loadingScope) {
-    			_.assign($$service.$$loadingScope, opts);
+    		if (_.isFinite(delay) && delay > 0) {
+    			$timeout(function() {
+    				$$service.$updateOptsNow(opts);
+    			}, delay);
+    			
+    		} else {
+    			$$service.$updateOptsNow(opts)
     		}
+    	};
+    	
+    	$$service.$updateOptsNow = function(opts) {
+    		if ($$service.$$loadingScope) {
+				$$service.$$loadingScope.$ctrl = $$service.$$loadingScope.$ctrl || {};
+				_.assign($$service.$$loadingScope.$ctrl, opts);
+			}
     	};
     	
     	return $$service;

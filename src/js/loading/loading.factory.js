@@ -13,9 +13,10 @@
     	
     	$$service.start = function(opts) {
     		if (!$$service.$$loadingScope) {
-    			var scope = {data: opts, active: true};
+    			var scope = {$ctrl: angular.merge({}, opts, {active: true})};
     			
-    			var el = "<ch-loading-modal ng-if=\"data.active\" message=\"data.message\" message-key=\"data.messageKey\"></ch-loading-modal>";
+    			var el = "<ch-loading-modal ng-if=\"$ctrl.active\" message=\"$ctrl.message\" message-key=\"$ctrl.messageKey\"" +
+    					"icon-class=\"{{$ctrl.iconClass}}\"></ch-loading-modal>";
     			
     			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
@@ -24,21 +25,34 @@
     		}
     	};
     	
-    	$$service.stop = function(error, delay) {
+    	$$service.stop = function(delay) {
     		$timeout(function() {
     			$$service.updateOpts({active: false});
+    			$$service.$$loadingScope = undefined;
     			
-    		}, delay || 0);
+    		}, _.isFinite(delay) ? delay : 0);
     	};
     	
-    	$$service.updateOpts = function(opts) {
+    	$$service.updateOpts = function(opts, delay) {
     		if (!_.isPlainObject(opts)) {
     			return;
     		}
     		
-    		if ($$service.$$loadingScope) {
-    			_.assign($$service.$$loadingScope, opts);
+    		if (_.isFinite(delay) && delay > 0) {
+    			$timeout(function() {
+    				$$service.$updateOptsNow(opts);
+    			}, delay);
+    			
+    		} else {
+    			$$service.$updateOptsNow(opts)
     		}
+    	};
+    	
+    	$$service.$updateOptsNow = function(opts) {
+    		if ($$service.$$loadingScope) {
+				$$service.$$loadingScope.$ctrl = $$service.$$loadingScope.$ctrl || {};
+				_.assign($$service.$$loadingScope.$ctrl, opts);
+			}
     	};
     	
     	return $$service;
