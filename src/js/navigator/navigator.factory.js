@@ -1,10 +1,10 @@
 (function() {
     'use strict';
     
-    angular.module("itaca.services").factory("Navigation", NavigationFactory);
+    angular.module("itaca.services").factory("Navigator", NavigatorFactory);
     
     /* @ngInject */
-    function NavigationFactory($http, $window, $document, $log, $location, $timeout, $anchorScroll, $mdSidenav, $state, $rootScope){
+    function NavigatorFactory($http, $window, $document, $log, $location, $timeout, $anchorScroll, $mdSidenav, $state, $rootScope){
     	var $$service = {};
     	
     	$$service.logout = function(){
@@ -118,6 +118,23 @@
     	$$service.next = function(args){
     		$rootScope.$broadcast('next', args);
     	};
+    	
+    	$$service.loadUserDetails =  function() {
+			$rootScope.$broadcast("loadUserDetails");
+		};
+		
+		$$service.disableNavEffect = function() {
+			angular.element(document.querySelector("#navigationDrawer")).addClass("background-no-scroll");
+			$rootScope.config = $rootScope.config || {};
+			$rootScope.config.navEffectDisabled = true;  
+			
+		};
+		
+		$$service.enableNavEffect = function() {
+			angular.element(document.querySelector("#navigationDrawer")).removeClass("background-no-scroll");
+			$rootScope.config = $rootScope.config || {};
+			$rootScope.config.navEffectDisabled = false;
+		};
     	
     	return $$service;
     }
