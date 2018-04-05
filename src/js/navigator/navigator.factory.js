@@ -4,7 +4,8 @@
     angular.module("itaca.services").factory("Navigator", NavigatorFactory);
     
     /* @ngInject */
-    function NavigatorFactory($http, $window, $document, $log, $location, $timeout, $anchorScroll, $mdSidenav, $state, $rootScope){
+    function NavigatorFactory($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+    		$state, $rootScope, AppOptions){
     	var $$service = {};
     	
     	$$service.logout = function(){
@@ -70,7 +71,7 @@
     		}
     	};
     	
-    	service.scrollToAnchor = function(anchor) {
+    	$$service.scrollToAnchor = function(anchor) {
     		if (anchor) {
     			// rimuovo l'eventuale # iniziale
     			anchor = anchor.startsWith("#") ? anchor.substring(1) : anchor;
@@ -80,6 +81,16 @@
     	};
     	
     	$$service.top = function(setOnload){
+    		window.scrollTo(0, 0);
+    		
+    		if (setOnload) {
+    			window.onload = function(){
+    				window.scrollTo(0, 0);
+    			};
+    		}
+    	};
+    	
+    	$$service.topAnimated = function(setOnload) {
     		$document.scrollTopAnimated(0);
     		
     		if (setOnload) {
@@ -103,10 +114,6 @@
     		return $mdSidenav('leftMenu').isOpen();
     	};
     	
-    	$$service.top = function(){
-    		$document.scrollTopAnimated(0);
-    	};
-    	
     	$$service.historyBack = function(){
     		$window.history.back();
     	};
@@ -127,7 +134,6 @@
 			angular.element(document.querySelector("#navigationDrawer")).addClass("background-no-scroll");
 			$rootScope.config = $rootScope.config || {};
 			$rootScope.config.navEffectDisabled = true;  
-			
 		};
 		
 		$$service.enableNavEffect = function() {

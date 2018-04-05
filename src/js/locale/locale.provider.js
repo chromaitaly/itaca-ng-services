@@ -40,7 +40,7 @@
     	
     	this.$$cookieName = cookieName;
     	
-    	this.API = $resource(url);
+    	this.API = $resource(url, {lang: "@lang"});
     	
     	this.supported = function() {
     		var supported = [];
