@@ -6,6 +6,12 @@
     /* @ngInject */
     function NavigatorFactory($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
     		$state, $rootScope, AppOptions){
+    	
+    	// disable browser scroll restore
+		if ('scrollRestoration' in history) {
+			history.scrollRestoration = 'manual';
+		}
+    	
     	var $$service = {};
     	
     	$$service.logout = function(){
@@ -24,17 +30,25 @@
     		location.assign("/login");
     	};
     	
-    	$$service.home = function(){
-    		location.assign("/");
-    	};
-    	
+    	$$service.home = function(newPage) {
+			newPage ? $window.open("/") : location.assign("/")
+		};
+		
     	$$service.go = function(url, reload, newPage){
     		reload ? location.assign(url) : newPage ? $window.open(url) : $location.url(url);
     	};
     	
+    	$$service.goSecure = function(url) {
+			location.assign("/secure/" + (url || ""));
+		};
+    	
     	$$service.goToState = function(stateName, params, options) {
     		$state.go(stateName, params, options);
 //    		$$service.top();
+    	};
+    	
+    	$$service.updateCurrentStateParams = function(params) {
+    		$state.go($state.current, angular.merge({}, $state.params, params));
     	};
     	
     	$$service.reload = function(){
@@ -52,11 +66,14 @@
     		}
     	};
     	
-    	$$service.redirect = function(page){
+    	$$service.reloadHome = function() {
+    		$$service.reloadState("home");
+    	};
+    	
+    	$$service.redirect = function(page, timeout){
     		$timeout(function() {
     			$location.url('/'+ page);
-    		}, 5000);
-
+    		}, isFinite(timeout) ? timeout : 5000);
     	};
     	
     	$$service.goToAnchor = function(anchor) {
@@ -91,13 +108,27 @@
     	};
     	
     	$$service.topAnimated = function(setOnload) {
-    		$document.scrollTopAnimated(0);
+    		$$service.scrollToAnimated(document.body, 0, 1250);
+//    		$document.scrollTopAnimated(0);
     		
     		if (setOnload) {
     			window.onload = function(){
-    				$document.scrollTopAnimated(0);
+//    				$document.scrollTopAnimated(0);
+    				$$service.scrollToAnimated(document.body, 0, 1250);
     			};
     		}
+    	};
+    	
+    	$$service.scrollToAnimated = function(element, behavior) {
+    		var el = angular.element(element)[0];
+    		
+    		if (!el) {
+    			return;
+    		}
+    		
+    		el.scrollIntoView({ 
+    			"behavior": behavior || 'smooth' 
+			});
     	};
     	
     	$$service.toggleLeftMenu = function() {
@@ -118,8 +149,8 @@
     		$window.history.back();
     	};
     	
-    	$$service.back = function(){
-    		$rootScope.$broadcast('back');
+    	$$service.back = function(args){
+    		$rootScope.$broadcast('back', args);
     	};
     	
     	$$service.next = function(args){
@@ -128,6 +159,19 @@
     	
     	$$service.loadUserDetails =  function() {
 			$rootScope.$broadcast("loadUserDetails");
+		};
+		
+		$$service.refreshNotifications = function(type) {
+			if (type) {
+				$rootScope.$broadcast("refresh-" + type  + "-notifications");
+				
+			} else {
+				$rootScope.$broadcast("refresh-notifications");
+			}
+		};
+		
+		$$service.closeAllNotifications = function() {
+			$rootScope.$broadcast('notifications-close');
 		};
 		
 		$$service.disableNavEffect = function() {
@@ -141,7 +185,7 @@
 			$rootScope.config = $rootScope.config || {};
 			$rootScope.config.navEffectDisabled = false;
 		};
-    	
+		
     	return $$service;
     }
 })();
