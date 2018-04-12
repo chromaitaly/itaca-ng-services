@@ -26,9 +26,89 @@
 
 (function() {
     "use strict";
-    CountryFactory.$inject = [ "$resource", "$q" ];
-    angular.module("itaca.services").factory("Country", CountryFactory);
-    function CountryFactory($resource, $q) {
+    AboutStorageFactory.$inject = [ "$resource", "$q" ];
+    angular.module("itaca.services").factory("AboutStorage", AboutStorageFactory);
+    function AboutStorageFactory($resource, $q) {
+        var $$service = {};
+        $$service.url = "/api/rs/public/storage";
+        $$service.get = function() {
+            var deferred = $q.defer();
+            $resource(this.url).get().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting application storage info");
+            });
+            return deferred.promise;
+        };
+        return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    AboutFactory.$inject = [ "$resource", "$q" ];
+    angular.module("itaca.services").factory("About", AboutFactory);
+    function AboutFactory($resource, $q) {
+        var $$service = {};
+        $$service.url = "/api/rs/public/about";
+        $$service.get = function() {
+            var deferred = $q.defer();
+            $resource(this.url).get().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting application info");
+            });
+            return deferred.promise;
+        };
+        return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    ConfigFactory.$inject = [ "$resource", "$q" ];
+    angular.module("itaca.services").factory("Config", ConfigFactory);
+    function ConfigFactory($resource, $q) {
+        var $$service = {};
+        $$service.url = "/api/rs/secure/config";
+        var methods = {
+            amazon: {
+                method: "GET",
+                url: $$service.url + "/amz"
+            },
+            creditCard: {
+                method: "GET",
+                url: $$service.url + "/cc"
+            }
+        };
+        $$service.API = $resource($$service.url, null, methods);
+        $$service.amazon = function() {
+            var deferred = $q.defer();
+            this.API.amazon().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting amz config");
+            });
+            return deferred.promise;
+        };
+        $$service.creditCard = function() {
+            var deferred = $q.defer();
+            this.API.creditCard().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting credit card config");
+            });
+            return deferred.promise;
+        };
+        return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    CountryApi.$inject = [ "$resource", "$q" ];
+    angular.module("itaca.services").factory("CountryAPI", CountryApi);
+    function CountryApi($resource, $q) {
         var $$service = {};
         $$service.url = "https://restcountries.eu/rest/v2";
         var request = function(data, headersGetter) {
@@ -37,42 +117,42 @@
             delete headers["x-requested-with"];
             return data;
         };
-        $$service.methods = {
+        var methods = {
             all: {
                 method: "GET",
-                url: service.url + "/all",
+                url: $$service.url + "/all",
                 isArray: true,
                 transformRequest: request
             },
             getByName: {
                 method: "GET",
-                url: service.url + "/name/:name",
+                url: $$service.url + "/name/:name",
                 isArray: true,
                 transformRequest: request
             },
             getByIso: {
                 method: "GET",
-                url: service.url + "/alpha/:iso",
+                url: $$service.url + "/alpha/:iso",
                 transformRequest: request
             }
         };
-        $$service.API = $resource($$service.url + "/all", {}, methods);
-        service.all = function() {
+        $$service.REQUEST = $resource(this.url, null, methods);
+        $$service.all = function() {
             var deferred = $q.defer();
-            $$service.API.all().$promise.then(function(response) {
+            this.REQUEST.all().$promise.then(function(response) {
                 deferred.resolve(response);
             }, function(response) {
                 deferred.reject(response.data && response.data.message ? response.data.message : "Error getting countries");
             });
             return deferred.promise;
         };
-        service.getByName = function(name) {
+        $$service.getByName = function(name) {
             var deferred = $q.defer();
             if (!name) {
                 deferred.reject("Name not defined");
                 return deferred.promise;
             }
-            $$service.API.getByName({
+            this.REQUEST.getByName({
                 name: name
             }).$promise.then(function(response) {
                 deferred.resolve(response);
@@ -81,27 +161,18 @@
             });
             return deferred.promise;
         };
-        service.getByIso = function(iso) {
+        $$service.getByIso = function(iso) {
             var deferred = $q.defer();
             if (!iso) {
                 deferred.reject("ISO code not defined");
                 return deferred.promise;
             }
-            $$service.API.getByIso({
+            this.REQUEST.getByIso({
                 iso: iso
             }).$promise.then(function(response) {
                 deferred.resolve(response);
             }, function(response) {
                 deferred.reject(response.data && response.data.message ? response.data.message : "Error getting country");
-            });
-            return deferred.promise;
-        };
-        $$service.all = function() {
-            var deferred = $q.defer();
-            $$service.API.query().$promise.then(function(response) {
-                deferred.resolve(response);
-            }, function(response) {
-                deferred.reject("Error getting countries: " + response && response.message ? response.message : "");
             });
             return deferred.promise;
         };
@@ -309,13 +380,19 @@
 
 (function() {
     "use strict";
-    GoogleFactory.$inject = [ "$http", "$resource", "$q", "$log" ];
-    angular.module("itaca.services").factory("GoogleAPI", GoogleFactory);
-    function GoogleFactory($http, $resource, $q, $log) {
+    GoogleApi.$inject = [ "$http", "$resource", "$q", "$log" ];
+    angular.module("itaca.services").factory("GoogleAPI", GoogleApi);
+    function GoogleApi($http, $resource, $q, $log) {
         var $$service = {};
         $$service.autocompleteSvc = new google.maps.places.AutocompleteService();
         $$service.placesSvc = new google.maps.places.PlacesService(document.createElement("div"));
         $$service.geocoderSvc = new google.maps.Geocoder();
+        var methods = {
+            get: {
+                method: "GET",
+                url: $$service.url
+            }
+        };
         $$service.cities = function(filter, nationalityAlpha2Code) {
             var deferred = $q.defer();
             $$service.autocompleteSvc.getPlacePredictions({
@@ -335,7 +412,7 @@
         };
         $$service.addresses = function(filter, nationalityAlpha2Code) {
             var deferred = $q.defer();
-            this.autocompleteSvc.getPlacePredictions({
+            $$service.autocompleteSvc.getPlacePredictions({
                 input: filter,
                 types: [ "address" ],
                 componentRestrictions: {
@@ -380,7 +457,165 @@
             });
             return deferred.promise;
         };
+        $$service.placeDetails = function(placeId) {
+            var deferred = $q.defer();
+            $$service.placesSvc.getDetails({
+                placeId: placeId
+            }, function callback(place, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    deferred.resolve(place);
+                } else {
+                    deferred.reject("Error getting place : " + status);
+                }
+            }, function(error) {
+                $log.error("Error getting place: " + response.statusText + " (code: " + response.status + ")");
+                deferred.reject("Error getting place");
+            });
+            return deferred.promise;
+        };
+        $$service.airportsByAddress = function(address) {
+            var deferred = $q.defer();
+            if (!address.geometry.location) {
+                $$service.latLong(address).then(function(data) {
+                    deferred.resolve($$service.airportsByLatlong(data));
+                }, function(error) {
+                    deferred.reject(error);
+                });
+            } else {
+                deferred.resolve($$service.airportsByLatlong(address));
+            }
+            return deferred.promise;
+        };
+        $$service.airportsByLatlong = function(latLong) {
+            var deferred = $q.defer();
+            var request = {
+                location: {
+                    lat: latLong.geometry.location.lat,
+                    lng: latLong.geometry.location.lng
+                },
+                radius: 5e4,
+                query: "airport " + latLong.address_components[0].long_name + " principal",
+                type: "airport"
+            };
+            $$service.placesSvc.textSearch(request, function(results, status) {
+                if (status == "OK") {
+                    var airports = [];
+                    for (var i = 0; i < results.length; i++) {
+                        var result = results[i];
+                        if (result.types.length == 3 && !result.permanently_closed) {
+                            var airport = {};
+                            airport.country = "";
+                            airport.city = "";
+                            airport.address = result.vicinity;
+                            airport.name = result.name;
+                            airport.lat = result.geometry.location.lat;
+                            airport.lng = result.geometry.location.lng;
+                            airport.type = "AIRPORT";
+                            airports.push(airport);
+                        }
+                    }
+                    deferred.resolve(airports);
+                } else {
+                    deferred.reject("Error getting airports : " + status);
+                }
+            });
+            return deferred.promise;
+        };
+        $$service.trainStationsByAddress = function(address) {
+            var deferred = $q.defer();
+            if (!address.geometry.location) {
+                $$service.latLong(address).then(function(data) {
+                    deferred.resolve($$service.trainStationsByLatlong(data));
+                }, function(error) {
+                    deferred.reject(error);
+                });
+            } else {
+                deferred.resolve($$service.trainStationsByLatlong(address));
+            }
+            return deferred.promise;
+        };
+        $$service.trainStationsByLatlong = function(latLong) {
+            var deferred = $q.defer();
+            var request = {
+                location: {
+                    lat: latLong.geometry.location.lat,
+                    lng: latLong.geometry.location.lng
+                },
+                radius: 5e4,
+                query: "train station " + latLong.address_components[0].long_name + " principal",
+                type: "train_station"
+            };
+            $$service.placesSvc.textSearch(request, function(results, status) {
+                if (status == "OK") {
+                    var trainStations = [];
+                    for (var i = 0; i < results.length; i++) {
+                        var result = results[i];
+                        if (!result.permanently_closed) {
+                            var trainStation = {};
+                            trainStation.country = "";
+                            trainStation.city = "";
+                            trainStation.address = result.vicinity;
+                            trainStation.name = result.name;
+                            trainStation.lat = result.geometry.location.lat;
+                            trainStation.lng = result.geometry.location.lng;
+                            trainStation.type = "TRAIN_STATION";
+                            trainStations.push(trainStation);
+                        }
+                    }
+                    deferred.resolve(trainStations);
+                } else {
+                    deferred.reject("Error getting train stations: " + status);
+                }
+            });
+            return deferred.promise;
+        };
         return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    LoadingProgressCtrl.$inject = [ "$scope", "$element", "$mdUtil" ];
+    angular.module("itaca.services").component("chLoadingProgress", {
+        bindings: {
+            message: "@",
+            messageKey: "@",
+            errorMessage: "@",
+            errorMessageKey: "@",
+            progressDiameter: "@",
+            contClass: "@",
+            hideSiblings: "<"
+        },
+        controller: LoadingProgressCtrl,
+        template: '<div flex="100" layout="column" layout-align="center center" class="ch-loading-progress {{$ctrl.contClass}}">' + '<div ng-if="!$ctrl.errorMessage && !$ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + "<div>" + '<md-progress-circular class="ch-progress-white" md-mode="indeterminate" md-diameter="{{$ctrl.progressDiameter}}"></md-progress-circular>' + "</div>" + '<div ng-if="$ctrl.message || $ctrl.messageKey" class="text-center">' + '<span ng-if="$ctrl.message" ng-bind="$ctrl.message"></span>' + '<span ng-if="!$ctrl.message && $ctrl.messageKey" translate="{{$ctrl.messageKey}}"></span>' + "</div>" + "</div>" + '<div ng-if="$ctrl.errorMessage || $ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + "<div>" + '<md-icon class="mdi mdi-alert-circle-outline md-70 text-white"></md-icon>' + "</div>" + '<div class="md-display-2">Oops...</div>' + "<div>" + '<span ng-if="$ctrl.errorMessage" ng-bind="$ctrl.errorMessage"></span>' + '<span ng-if="!$ctrl.errorMessage && $ctrl.errorMessageKey" translate="{{$ctrl.errorMessageKey}}"></span>' + "</div>" + "</div>" + "</div>"
+    });
+    function LoadingProgressCtrl($scope, $element, $mdUtil) {
+        var ctrl = this;
+        this.$postLink = function() {
+            ctrl.$hideSiblings(ctrl.hideSiblings);
+            ctrl.$disableScroll();
+        };
+        this.$onInit = function() {
+            ctrl.contClass = ctrl.contClass || "bg-primary text-white md-title";
+            ctrl.progressDiameter = ctrl.progressDiameter || 150;
+        };
+        this.$onChanges = function(changesObj) {
+            if (changesObj.hideSiblings) {
+                ctrl.$hideSiblings(ctrl.hideSiblings);
+            }
+        };
+        this.$onDestroy = function() {
+            ctrl.$hideSiblings(false);
+            ctrl.$restoreScroll();
+        };
+        this.$disableScroll = function() {
+            ctrl.$restoreScroll = $mdUtil.disableScrollAround($element);
+        };
+        this.$hideSiblings = function(hide) {
+            var children = $element.parent().children();
+            hide ? children.addClass("ng-hide") : children.removeClass("ng-hide");
+            $element.removeClass("ng-hide");
+        };
     }
 })();
 
@@ -391,38 +626,78 @@
     function LoadingProgressFactory($timeout, HtmlUtils) {
         var $$service = {};
         $$service.start = function(opts) {
-            if (!$$service.$$loadingEl) {
+            if (!$$service.$$loadingScope) {
                 var scope = {
-                    data: opts,
-                    active: true
+                    $ctrl: angular.merge({}, opts, {
+                        active: true
+                    })
                 };
-                var el = '<ch-loading-progress ng-if="data.active" message="data.message" message-key="data.messageKey" ' + "error-message=\"data.error ? data.errorMessage : ''\" error-message-key=\"data.error ? data.errorMessageKey : ''\" " + 'hide-siblings="data.active"></ch-loading-progress>';
-                $$service.$$loadingEl = HtmlUtils.addElement(el, scope, null, true);
+                var el = '<ch-loading-progress ng-if="$ctrl.active" message="{{$ctrl.message}}" message-key="{{$ctrl.messageKey}}" ' + "error-message=\"{{$ctrl.error ? $ctrl.errorMessage : ''}}\" error-message-key=\"{{$ctrl.error ? $ctrl.errorMessageKey : ''}}\" " + 'icon-class="{{$ctrl.iconClass}}" error-icon-class="{{$ctrl.errorIconClass}}" ' + 'hide-siblings="$ctrl.active" animation-class="animated fadeIn"></ch-loading-progress>';
+                $$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
             } else {
                 $$service.updateOpts({
                     data: opts
                 });
             }
         };
-        $$service.stop = function(error, delay) {
-            $$service.updateOpts({
-                error: _.isBoolean(error) ? error : !_.isNil(error)
-            });
+        $$service.stop = function(delay) {
             $timeout(function() {
                 $$service.updateOpts({
                     active: false
                 });
-            }, delay || 0);
+                $$service.$$loadingScope = undefined;
+            }, _.isFinite(delay) ? delay : 0);
         };
-        $$service.updateOpts = function(opts) {
+        $$service.updateOpts = function(opts, delay) {
             if (!_.isPlainObject(opts)) {
                 return;
             }
-            if ($$service.$$loadingEl) {
-                _.assign($$service.$$loadingEl.scope(), opts);
+            if (_.isFinite(delay) && delay > 0) {
+                $timeout(function() {
+                    $$service.$updateOptsNow(opts);
+                }, delay);
+            } else {
+                $$service.$updateOptsNow(opts);
+            }
+        };
+        $$service.$updateOptsNow = function(opts) {
+            if ($$service.$$loadingScope) {
+                $$service.$$loadingScope.$ctrl = $$service.$$loadingScope.$ctrl || {};
+                _.assign($$service.$$loadingScope.$ctrl, opts);
             }
         };
         return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    LoadingModalCtrl.$inject = [ "$scope", "$element", "$mdUtil" ];
+    angular.module("itaca.services").component("chLoading", {
+        bindings: {
+            message: "@",
+            messageKey: "@",
+            progressDiameter: "@",
+            contClass: "@"
+        },
+        controller: LoadingModalCtrl,
+        template: '<div flex layout="column" layout-padding layout-align="center center" class="ch-loading-modal {{$ctrl.contClass}}">' + "<div>" + '<md-progress-circular class="md-primary ch-progress" md-mode="indeterminate" md-diameter="{{$ctrl.progressDiameter}}"></md-progress-circular>' + "</div>" + '<div ng-if="$ctrl.message || $ctrl.messageKey" class="text-center">' + '<span ng-if="$ctrl.message" ng-bind="$ctrl.message"></span>' + '<span ng-if="!$ctrl.message && $ctrl.messageKey" translate="{{$ctrl.messageKey}}"></span>' + "</div>" + "</div>"
+    });
+    function LoadingModalCtrl($scope, $element, $mdUtil) {
+        var ctrl = this;
+        this.$postLink = function() {
+            ctrl.$disableScroll();
+        };
+        this.$onInit = function() {
+            ctrl.contClass = ctrl.contClass || "md-title";
+            ctrl.progressDiameter = ctrl.progressDiameter || 80;
+        };
+        this.$onDestroy = function() {
+            ctrl.$restoreScroll();
+        };
+        this.$disableScroll = function() {
+            ctrl.$restoreScroll = $mdUtil.disableScrollAround($element);
+        };
     }
 })();
 
@@ -433,32 +708,44 @@
     function LoadingFactory($rootScope, $timeout, HtmlUtils) {
         var $$service = {};
         $$service.start = function(opts) {
-            if (!$$service.$$loadingEl) {
+            if (!$$service.$$loadingScope) {
                 var scope = {
-                    data: opts,
-                    active: true
+                    $ctrl: angular.merge({}, opts, {
+                        active: true
+                    })
                 };
-                var el = '<ch-loading-progress ng-if="data.active" message="data.message" message-key="data.messageKey"></ch-loading-progress>';
-                $$service.$$loadingEl = HtmlUtils.addElement(el, scope, null, true);
+                var el = '<ch-loading ng-if="$ctrl.active" message="{{$ctrl.message}}" message-key="{{$ctrl.messageKey}}"' + 'icon-class="{{$ctrl.iconClass}}"></ch-loading>';
+                $$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
             } else {
                 $$service.updateOpts({
                     data: opts
                 });
             }
         };
-        $$service.stop = function(error, delay) {
+        $$service.stop = function(delay) {
             $timeout(function() {
                 $$service.updateOpts({
                     active: false
                 });
-            }, delay || 0);
+                $$service.$$loadingScope = undefined;
+            }, _.isFinite(delay) ? delay : 0);
         };
-        $$service.updateOpts = function(opts) {
+        $$service.updateOpts = function(opts, delay) {
             if (!_.isPlainObject(opts)) {
                 return;
             }
-            if ($$service.$$loadingEl) {
-                _.assign($$service.$$loadingEl.scope(), opts);
+            if (_.isFinite(delay) && delay > 0) {
+                $timeout(function() {
+                    $$service.$updateOptsNow(opts);
+                }, delay);
+            } else {
+                $$service.$updateOptsNow(opts);
+            }
+        };
+        $$service.$updateOptsNow = function(opts) {
+            if ($$service.$$loadingScope) {
+                $$service.$$loadingScope.$ctrl = $$service.$$loadingScope.$ctrl || {};
+                _.assign($$service.$$loadingScope.$ctrl, opts);
             }
         };
         return $$service;
@@ -497,7 +784,9 @@
     function Locale($cookies, $window, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions, cookieName, url) {
         var $$service = this;
         this.$$cookieName = cookieName;
-        this.API = $resource(url);
+        this.API = $resource(url, {
+            lang: "@lang"
+        });
         this.supported = function() {
             var supported = [];
             var it = {
@@ -572,9 +861,12 @@
 
 (function() {
     "use strict";
-    NavigationFactory.$inject = [ "$http", "$window", "$document", "$log", "$location", "$timeout", "$anchorScroll", "$mdSidenav", "$state", "$rootScope" ];
-    angular.module("itaca.services").factory("Navigation", NavigationFactory);
-    function NavigationFactory($http, $window, $document, $log, $location, $timeout, $anchorScroll, $mdSidenav, $state, $rootScope) {
+    NavigatorFactory.$inject = [ "$http", "$window", "$document", "$animateCss", "$log", "$location", "$timeout", "$anchorScroll", "$mdSidenav", "$state", "$rootScope", "AppOptions" ];
+    angular.module("itaca.services").factory("Navigator", NavigatorFactory);
+    function NavigatorFactory($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, $state, $rootScope, AppOptions) {
+        if ("scrollRestoration" in history) {
+            history.scrollRestoration = "manual";
+        }
         var $$service = {};
         $$service.logout = function() {
             $log.info("Logging out...");
@@ -587,14 +879,20 @@
         $$service.login = function() {
             location.assign("/login");
         };
-        $$service.home = function() {
-            location.assign("/");
+        $$service.home = function(newPage) {
+            newPage ? $window.open("/") : location.assign("/");
         };
         $$service.go = function(url, reload, newPage) {
             reload ? location.assign(url) : newPage ? $window.open(url) : $location.url(url);
         };
+        $$service.goSecure = function(url) {
+            location.assign("/secure/" + (url || ""));
+        };
         $$service.goToState = function(stateName, params, options) {
             $state.go(stateName, params, options);
+        };
+        $$service.updateCurrentStateParams = function(params) {
+            $state.go($state.current, angular.merge({}, $state.params, params));
         };
         $$service.reload = function() {
             $window.location.reload();
@@ -610,10 +908,13 @@
                 });
             }
         };
-        $$service.redirect = function(page) {
+        $$service.reloadHome = function() {
+            $$service.reloadState("home");
+        };
+        $$service.redirect = function(page, timeout) {
             $timeout(function() {
                 $location.url("/" + page);
-            }, 5e3);
+            }, isFinite(timeout) ? timeout : 5e3);
         };
         $$service.goToAnchor = function(anchor) {
             if (anchor) {
@@ -624,19 +925,36 @@
                 }
             }
         };
-        service.scrollToAnchor = function(anchor) {
+        $$service.scrollToAnchor = function(anchor) {
             if (anchor) {
                 anchor = anchor.startsWith("#") ? anchor.substring(1) : anchor;
                 $anchorScroll(anchor);
             }
         };
         $$service.top = function(setOnload) {
-            $document.scrollTopAnimated(0);
+            window.scrollTo(0, 0);
             if (setOnload) {
                 window.onload = function() {
-                    $document.scrollTopAnimated(0);
+                    window.scrollTo(0, 0);
                 };
             }
+        };
+        $$service.topAnimated = function(setOnload) {
+            $$service.scrollToAnimated(document.body, 0, 1250);
+            if (setOnload) {
+                window.onload = function() {
+                    $$service.scrollToAnimated(document.body, 0, 1250);
+                };
+            }
+        };
+        $$service.scrollToAnimated = function(element, behavior) {
+            var el = angular.element(element)[0];
+            if (!el) {
+                return;
+            }
+            el.scrollIntoView({
+                behavior: behavior || "smooth"
+            });
         };
         $$service.toggleLeftMenu = function() {
             $mdSidenav("leftMenu").toggle();
@@ -649,17 +967,37 @@
         $$service.isLeftMenuOpen = function() {
             return $mdSidenav("leftMenu").isOpen();
         };
-        $$service.top = function() {
-            $document.scrollTopAnimated(0);
-        };
         $$service.historyBack = function() {
             $window.history.back();
         };
-        $$service.back = function() {
-            $rootScope.$broadcast("back");
+        $$service.back = function(args) {
+            $rootScope.$broadcast("back", args);
         };
         $$service.next = function(args) {
             $rootScope.$broadcast("next", args);
+        };
+        $$service.loadUserDetails = function() {
+            $rootScope.$broadcast("loadUserDetails");
+        };
+        $$service.refreshNotifications = function(type) {
+            if (type) {
+                $rootScope.$broadcast("refresh-" + type + "-notifications");
+            } else {
+                $rootScope.$broadcast("refresh-notifications");
+            }
+        };
+        $$service.closeAllNotifications = function() {
+            $rootScope.$broadcast("notifications-close");
+        };
+        $$service.disableNavEffect = function() {
+            angular.element(document.querySelector("#navigationDrawer")).addClass("background-no-scroll");
+            $rootScope.config = $rootScope.config || {};
+            $rootScope.config.navEffectDisabled = true;
+        };
+        $$service.enableNavEffect = function() {
+            angular.element(document.querySelector("#navigationDrawer")).removeClass("background-no-scroll");
+            $rootScope.config = $rootScope.config || {};
+            $rootScope.config.navEffectDisabled = false;
         };
         return $$service;
     }
@@ -689,6 +1027,69 @@
                     onHideFunc(response);
                 }
             });
+        };
+        return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
+    TransitionsListenerFactory.$inject = [ "$transitions", "$translate", "$log", "InitSrv", "AppOptions", "Navigator", "Loading" ];
+    angular.module("itaca.services").factory("TransitionsListener", TransitionsListenerFactory);
+    function TransitionsListenerFactory($transitions, $translate, $log, InitSrv, AppOptions, Navigator, Loading) {
+        var $$service = {};
+        $$service.enable = function() {
+            $transitions.onBefore({}, startLoading);
+            $transitions.onSuccess({}, finishStateChange);
+            $transitions.onSuccess({}, stopLoading);
+            $transitions.onError({}, finishStateChangeError);
+            $transitions.onError({}, stopLoading);
+            function nonRootState(state) {
+                return !_.isEmpty(state.name);
+            }
+            function finishStateChange(transition) {
+                var toState = transition.to();
+                if (_.includes(transition.getResolveTokens(), "title")) {
+                    transition.injector().getAsync("title").then(function(title) {
+                        AppOptions.page = AppOptions.page || {};
+                        AppOptions.page.title = title;
+                    }, _.stubFalse);
+                } else if (toState.data && toState.data.titleKey) {
+                    $translate(angular.isFunction(toState.data.titleKey) ? toState.data.titleKey() : toState.data.titleKey).then(function(message) {
+                        AppOptions.page = AppOptions.page || {};
+                        AppOptions.page.title = message;
+                    }, _.stubFalse);
+                }
+                if (toState.data && toState.data.menuItem) {
+                    AppOptions.page = AppOptions.page || {};
+                    AppOptions.page.currentItem = angular.isFunction(toState.data.menuItem) ? toState.data.menuItem() : toState.data.menuItem;
+                }
+                if (_.isNil(location.hash) || _.isEmpty(location.hash)) {
+                    Navigator.topAnimated(true);
+                }
+                AppOptions.page = AppOptions.page || {};
+                AppOptions.page.backBtn = !(toState.backBtn == false);
+                toState.navEffect == false ? Navigator.disableNavEffect() : Navigator.enableNavEffect();
+                AppOptions.page.hideNav = toState.data && toState.data.hideNav || false;
+            }
+            function finishStateChangeError(transition) {
+                var toState = transition.to();
+                var error = transition.error();
+                if (!toState.redirectTo && !error.redirected) {
+                    $log.error("Error loading page " + toState.url + " (" + toState.name + "): " + error);
+                }
+            }
+            function startLoading(transition) {
+                !transition.dynamic() && Loading.start();
+            }
+            function stopLoading(transition) {
+                var toState = transition.to();
+                var error = transition.error();
+                if (transition.success || !toState.redirectTo && !error.redirected) {
+                    !transition.dynamic() && Loading.stop();
+                    Navigator.closeLeftMenu();
+                }
+            }
         };
         return $$service;
     }

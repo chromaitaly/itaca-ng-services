@@ -1,0 +1,69 @@
+@gray-base:             #000;
+@gray-base-light:		#111;
+@gray-darker:           lighten(@gray-base, 13.5%); // #222
+@gray-dark:             lighten(@gray-base, 20%);   // #333
+@gray:                  lighten(@gray-base, 33.5%); // #555
+@gray-light:            lighten(@gray-base, 46.7%); // #777
+@gray-medium:           lighten(@gray-base, 85%); // #d9d9d9;
+@gray-lighter:          lighten(@gray-base, 95%); // #f2f2f2
+
+@color-white:			#fff;
+@color-yellow:          #FFC107;
+@color-blue-sea:		#3f51b5;
+
+@color-primary:			#92278f;
+@color-primary-light:	lighten(@color-primary, 30%);
+@color-accent:			#b0bec5;
+@color-info:			#00c0ef;
+@color-info-light:		rgba(0, 192, 239, 0.25);
+@color-success:			#00a65a;
+@color-success-dark:	#008000;
+@color-warn:			#f39c12;
+@color-danger:			#dd2c00;
+
+@color-fb:				#3B5998;
+@color-twitter:			#1da1f2;
+@color-gplus:			#d34836;
+@color-green-google:	#34a853;
+@color-blue-google:		#4285f4;
+@color-whatsapp:		#4ea01a;
+@color-messenger:		#0483fc;
+@color-telegram: 		#1493ec;
+@color-skype: 			#34aff0;
+@color-reddit: 			#ef4531;
+@color-linkedin:		#1c7bb6;
+@color-pinterest: 		#bd081c;
+@color-tumblr: 			#324459;
+@color-vk:				#4c75a2;
+
+//== Typography
+//
+//## Font
+
+@font-family-sans-serif:  "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif:       Georgia, "Times New Roman", Times, serif;
+//** Default monospace fonts for `<code>`, `<kbd>`, and `<pre>`.
+@font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
+@font-family-base:        @font-family-sans-serif;
+
+@font-size-base:          14px;
+@font-size-large:         ceil((@font-size-base * 1.25)); // ~18px
+@font-size-small:         ceil((@font-size-base * 0.85)); // ~12px
+
+
+/* custom media queries */
+
+@portrait: ~" and (orientation: portrait)";
+@landscape: ~" and (orientation: landscape)";
+@query-xs:	~"only screen and (max-width: 599px)";
+@query-gt-xs:	~"only screen and (min-width: 600px)";
+@query-sm:	~"only screen and (min-width: 600px) and (max-width: 959px)";
+@query-gt-sm:	~"only screen and (min-width: 960px)";
+@query-md:	~"only screen and (min-width: 960px) and (max-width: 1279px)";
+@query-gt-md:	~"only screen and (min-width: 1280px)";
+@query-lg:	~"only screen and (min-width: 1280px) and (max-width: 1919px)";
+@query-gt-lg:	~"only screen and (min-width: 1920px)";
+@query-xl:	~"only screen and (min-width: 1920px)";
+
+/* channel icon path */
+@channel-base-url: "../../public/img/channel";

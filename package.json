@@ -41,6 +41,7 @@
 		"grunt-contrib-jshint": "latest",
 		"grunt-contrib-less": "latest",
 		"grunt-contrib-uglify": "latest",
+		"grunt-less-imports": "latest",
 		"grunt-ng-annotate": "latest",
 		"grunt-postcss": "^0.9.0",
 		"jit-grunt": "latest",

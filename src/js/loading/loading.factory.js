@@ -15,8 +15,8 @@
     		if (!$$service.$$loadingScope) {
     			var scope = {$ctrl: angular.merge({}, opts, {active: true})};
     			
-    			var el = "<ch-loading-modal ng-if=\"$ctrl.active\" message=\"$ctrl.message\" message-key=\"$ctrl.messageKey\"" +
-    					"icon-class=\"{{$ctrl.iconClass}}\"></ch-loading-modal>";
+    			var el = "<ch-loading ng-if=\"$ctrl.active\" message=\"{{$ctrl.message}}\" message-key=\"{{$ctrl.messageKey}}\"" +
+					"icon-class=\"{{$ctrl.iconClass}}\"></ch-loading>";
     			
     			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
