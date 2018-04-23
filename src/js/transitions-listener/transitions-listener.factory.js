@@ -44,15 +44,20 @@
     				Navigator.topAnimated(true);
     			}
     			
-    			// abilita/disabilita back button
+    			// mostra/nasconde back button
     			AppOptions.page = AppOptions.page || {};
-    			AppOptions.page.backBtn = !(toState.backBtn == false);
+    			// mostra/nasconde nav
+    			AppOptions.page.hideNav = (toState.data && toState.data.hideNav) || false;
+    			// mostra/nasconde back button
+    			AppOptions.page.backBtn = (toState.data && toState.data.backBtn) || false;
+    			AppOptions.page.backState = (toState.data && toState.data.backState) || null;
+    			// mostra/nasconde search button
+    			AppOptions.page.hideSearch = (toState.data && toState.data.hideSearch) || false;
+    			// nasconde/mostra il go-to-top button
+    			AppOptions.page.hideTopButton = (toState.data && toState.data.hideTopButton) || false;
     			
     			// abilita/disabilita effetto su nav
     			toState.navEffect == false ? Navigator.disableNavEffect() : Navigator.enableNavEffect();
-    			
-    			// nasconde/mostra nav
-    			AppOptions.page.hideNav = toState.data && toState.data.hideNav || false;
     		}
     		
     		function finishStateChangeError(transition) {

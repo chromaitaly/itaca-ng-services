@@ -150,7 +150,7 @@
     	};
     	
     	$$service.back = function(args){
-    		$rootScope.$broadcast('back', args);
+    		AppOptions.page && AppOptions.page.backState ? $$service.goToState(AppOptions.page.backState) : $rootScope.$broadcast('back', args);
     	};
     	
     	$$service.next = function(args){
