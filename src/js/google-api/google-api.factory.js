@@ -63,12 +63,12 @@
 			var deferred = $q.defer();
 			
 			$$service.geocoderSvc.geocode( { address: address}, function(results, status) {
-			      if (data.status == "OK") {
-			    	  deferred.resolve(data.results[0]);
+			      if (status == google.maps.GeocoderStatus.OK) {
+			    	  deferred.resolve(results[0]);
 			      } else {
-			    	  deferred.reject("Error getting latlong : " + data.status);
+			    	  deferred.reject("Error getting latlong : " + status);
 			      }
-			}, function(error) {
+			}, function(response) {
 				$log.error("Error getting latlong: " + response.statusText + " (code: " + response.status + ")");
 				deferred.reject("Error getting latlong");
 			});
@@ -86,7 +86,7 @@
 			  } else {
 		    	  deferred.reject("Error getting place : " + status);
 		      }
-			}, function(error) {
+			}, function(response) {
 				$log.error("Error getting place: " + response.statusText + " (code: " + response.status + ")");
 				deferred.reject("Error getting place");
 			});
@@ -126,7 +126,7 @@
 			};
 
 			$$service.placesSvc.textSearch(request, function(results, status){
-				if (status == "OK") {
+				if (status == google.maps.places.PlacesServiceStatus.OK) {
 					var airports = [];
 					
 				    for (var i = 0; i < results.length; i++) {
@@ -188,7 +188,7 @@
 			};
 
 			$$service.placesSvc.textSearch(request, function(results, status){
-				if (status == "OK") {
+				if (status == google.maps.places.PlacesServiceStatus.OK) {
 					var trainStations = [];
 					
 				    for (var i = 0; i < results.length; i++) {
