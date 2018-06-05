@@ -4,16 +4,20 @@
     angular.module("itaca.services").provider('Currency', CurrencyProvider);
 	
 	function CurrencyProvider() {
-		var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES";
+		var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "de5e4f93006ee81e904bf3e0c95f7e28";
 
 		this.init = function(initObj) {
 			if (initObj) {
 				if (initObj.cookieName) {
-					$cookieName = initObj.cookieName;
+					$$cookieName = initObj.cookieName;
 				}
 				
 				if (initObj.postUrl) {
 					$$ratesCookieName = initObj.ratesCookieName;
+				}
+				
+				if (initObj.accessKey) {
+					$$accessKey = initObj.accessKey;
 				}
 			}
 		};
@@ -29,19 +33,26 @@
 				$$ratesCookieName = ratesCookieName;
 			}
 		};
+		
+		this.setAccessKey = function(accessKey) {
+			if(_.isString(accessKey)) {
+				$$accessKey = accessKey;
+			}
+		};
 
 		this.$get = /* @ngInject */ function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions) {
-			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName);
+			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, $$accessKey);
 		};
 	}
     
-    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName){
+    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName, accessKey){
 	 	var $$service = this;
 	 	
-	 	this.$$cookieName = $$cookieName;
-	 	this.$$ratesCookieName = $$ratesCookieName;
+	 	this.$$cookieName = cookieName;
+	 	this.$$ratesCookieName = ratesCookieName;
+	 	this.$$accessKey = accessKey;
 	 	
-    	this.API = $resource("https://api.fixer.io/latest");
+    	this.API = $resource("http://data.fixer.io/api/latest", {access_key: $$service.$$accessKey});
 	 	
 	 	this.current = {iso : 'EUR', symbol: "€", rate : 1};
 	 	
@@ -139,8 +150,8 @@
 	 			// return currency
 	 			deferred.resolve($$service.current);
 	 	    
-	 	    }, function(response) {
-	 	    	deferred.reject(response);
+	 	    }, function(error) {
+	 	    	deferred.reject(error);
 	 	    });
 	 			
 	 		return deferred.promise;
@@ -186,10 +197,17 @@
 	 			
 	 		} else {		
 	 			// recupero il cambio attuale rispetto alla valuta passata
-	 		    $$service.API.get({base: baseCurrencyIso}).then(function(response){
-	 		    	exchange = response.data;
-	 		    	exchange.base = {iso: response.data.base, symbol: currency.symbol};
-	 		    	exchange.date = new Date();
+	 		    $$service.API.get({base: baseCurrencyIso}).$promise.then(function(response){
+	 		    	if (!response.success) {
+	 		    		deferred.reject(response.error && response.error.info ? response.error.info : "Error getting currencies");
+	 		    		return;
+	 		    	}
+	 		    	
+	 		    	exchange = {
+ 		    			base: {iso: response.base, symbol: currency.symbol}, 
+ 		    			date: response.date || new Date(),
+ 		    			rates: response.rates
+	 		    	};
 	 		    	
 	 		    	// salvo/aggiorno il cambio attuale fino alla mezzanotte di oggi (per limitare future richieste)
 	 		    	currencyRateList = currencyRateList || [];
@@ -210,7 +228,7 @@
 	 		    	deferred.resolve(exchange);
 	 		    	
 	 		    }, function(response) {
-	 		    	deferred.reject(response);
+	 		    	deferred.reject(response.error && response.error.info ? response.error.info : "Error getting currencies");
 	 		    });
 	 		}
 	 		
@@ -254,6 +272,6 @@
 	 	};
 	 	
 	 	// init
-	 	this.init();
+	 	this.$init();
 	 }
 })();

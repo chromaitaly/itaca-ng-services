@@ -38,6 +38,10 @@
     		reload ? location.assign(url) : newPage ? $window.open(url) : $location.url(url);
     	};
     	
+    	$$service.goBlank = function(url) {
+    		$$service.go(url, false, true);
+    	};
+    	
     	$$service.goSecure = function(url) {
 			location.assign("/secure/" + (url || ""));
 		};
