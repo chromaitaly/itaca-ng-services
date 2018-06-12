@@ -14,10 +14,12 @@
     	
     	var $$service = {};
     	
-    	$$service.logout = function(){
+    	$$service.logout = function(url){
     		$log.info("Logging out...");
     		
-    		$http.post('logout', {}).then(function() {
+    		url = url || 'logout';
+    		
+    		$http.post(url, {}).then(function() {
     			$log.info("Logout success. Going back to home...");
     			
     		  },function(error) {
@@ -39,7 +41,7 @@
     	};
     	
     	$$service.goBlank = function(url) {
-    		$$service.go(url, false, true);
+    		return $$service.go(url, false, true);
     	};
     	
     	$$service.goSecure = function(url) {
@@ -47,12 +49,12 @@
 		};
     	
     	$$service.goToState = function(stateName, params, options) {
-    		$state.go(stateName, params, options);
+    		return $state.go(stateName || $state.current, params, options);
 //    		$$service.top();
     	};
     	
     	$$service.updateCurrentStateParams = function(params) {
-    		$state.go($state.current, angular.merge({}, $state.params, params));
+    		return $state.go($state.current, angular.merge({}, $state.params, params));
     	};
     	
     	$$service.reload = function(){
@@ -61,17 +63,17 @@
     	
     	$$service.reloadState = function(url, params){
     		if (!url) {
-    			$state.reload();
+    			return $state.reload();
     		
     		} else {
-    			$state.transitionTo(url, params, { 
+    			return $state.transitionTo(url, params, { 
     			  reload: true, inherit: false, notify: true
     			});
     		}
     	};
     	
     	$$service.reloadHome = function() {
-    		$$service.reloadState("home");
+    		return $$service.reloadState("home");
     	};
     	
     	$$service.redirect = function(page, timeout){

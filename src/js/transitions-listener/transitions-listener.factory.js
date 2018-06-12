@@ -41,7 +41,7 @@
     			
     			// torna a inizio pagina
     			if (_.isNil(location.hash) || _.isEmpty(location.hash)) {
-    				Navigator.topAnimated(true);
+    				!transition.dynamic() && Navigator.topAnimated(true);
     			}
     			
     			// mostra/nasconde back button
