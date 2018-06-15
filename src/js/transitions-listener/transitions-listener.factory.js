@@ -7,12 +7,16 @@
     function TransitionsListenerFactory($transitions, $translate, $log, InitSrv, AppOptions, Navigator, Loading) {
     	var $$service = {};
     	
+    	$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
+    	
     	$$service.enable = function() {
-    		$transitions.onBefore({}, startLoading);
-    		$transitions.onSuccess({}, finishStateChange);
-    		$transitions.onSuccess({}, stopLoading);
-    		$transitions.onError({}, finishStateChangeError);
-    		$transitions.onError({}, stopLoading);
+    		$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
+    		
+    		$$service.$$deregisters.onBefore.push($transitions.onBefore({}, startLoading));
+    		$$service.$$deregisters.onSuccess.push($transitions.onSuccess({}, finishStateChange));
+    		$$service.$$deregisters.onSuccess.push($transitions.onSuccess({}, stopLoading));
+    		$$service.$$deregisters.onError.push($transitions.onError({}, finishStateChangeError));
+    		$$service.$$deregisters.onError.push($transitions.onError({}, stopLoading));
     		
     		function nonRootState(state) {
     			return !_.isEmpty(state.name);
@@ -85,6 +89,27 @@
     				// chiusura menu laterale
     				Navigator.closeLeftMenu();
     			}
+    		}
+    	};
+    	
+    	$$service.disable = function(type) {
+    		if (type) {
+    			// deregister specific hooks
+    			var deregisterFnArr = $$service.$$deregisters[type];
+    			
+    			_.forEach(deregisterFnArr, function(deregisterFn) {
+					// deregister
+					angular.isFunction(deregisterFn) && deregisterFn();
+				});
+    			
+    		} else {
+    			// deregister all hooks
+    			_.forEach($$service.$$deregisters, function(deregisterFnArr, hookType) {
+    				_.forEach(deregisterFnArr, function(deregisterFn) {
+    					// deregister
+    					angular.isFunction(deregisterFn) && deregisterFn();
+    				});
+    			});
     		}
     	};
     	
