@@ -2,7 +2,7 @@
 ********************************************************************************
 ********************************************************************************
 ***	   itaca-ng-services														 
-***    Copyright (C) 2016   Chroma Italy Hotels srl	 
+***    Copyright (C) 2016-2018   Chroma Italy Hotels srl	 
 ***                                                                          
 ***    This program is free software: you can redistribute it and/or modify  
 ***    it under the terms of the GNU General Public License as published by  
@@ -184,14 +184,17 @@
     "use strict";
     angular.module("itaca.services").provider("Currency", CurrencyProvider);
     function CurrencyProvider() {
-        var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES";
+        var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "de5e4f93006ee81e904bf3e0c95f7e28";
         this.init = function(initObj) {
             if (initObj) {
                 if (initObj.cookieName) {
-                    $cookieName = initObj.cookieName;
+                    $$cookieName = initObj.cookieName;
                 }
                 if (initObj.postUrl) {
                     $$ratesCookieName = initObj.ratesCookieName;
+                }
+                if (initObj.accessKey) {
+                    $$accessKey = initObj.accessKey;
                 }
             }
         };
@@ -205,15 +208,23 @@
                 $$ratesCookieName = ratesCookieName;
             }
         };
+        this.setAccessKey = function(accessKey) {
+            if (_.isString(accessKey)) {
+                $$accessKey = accessKey;
+            }
+        };
         this.$get = [ "$log", "$cookies", "$q", "$resource", "localStorageService", "iso4217", "AppOptions", function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions) {
-            return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName);
+            return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, $$accessKey);
         } ];
     }
-    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName) {
+    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName, accessKey) {
         var $$service = this;
-        this.$$cookieName = $$cookieName;
-        this.$$ratesCookieName = $$ratesCookieName;
-        this.API = $resource("https://api.fixer.io/latest");
+        this.$$cookieName = cookieName;
+        this.$$ratesCookieName = ratesCookieName;
+        this.$$accessKey = accessKey;
+        this.API = $resource("http://data.fixer.io/api/latest", {
+            access_key: $$service.$$accessKey
+        });
         this.current = {
             iso: "EUR",
             symbol: "€",
@@ -285,8 +296,8 @@
                     rate: $$service.supported && $$service.supported[currencyISO] ? $$service.supported[currencyISO] : 1
                 });
                 deferred.resolve($$service.current);
-            }, function(response) {
-                deferred.reject(response);
+            }, function(error) {
+                deferred.reject(error);
             });
             return deferred.promise;
         };
@@ -322,13 +333,19 @@
             } else {
                 $$service.API.get({
                     base: baseCurrencyIso
-                }).then(function(response) {
-                    exchange = response.data;
-                    exchange.base = {
-                        iso: response.data.base,
-                        symbol: currency.symbol
+                }).$promise.then(function(response) {
+                    if (!response.success) {
+                        deferred.reject(response.error && response.error.info ? response.error.info : "Error getting currencies");
+                        return;
+                    }
+                    exchange = {
+                        base: {
+                            iso: response.base,
+                            symbol: currency.symbol
+                        },
+                        date: response.date || new Date(),
+                        rates: response.rates
                     };
-                    exchange.date = new Date();
                     currencyRateList = currencyRateList || [];
                     var currentIdx = _.findIndex(currencyRateList, function(value) {
                         return value.base.iso == baseCurrencyIso && !_.isEmpty(value.rates);
@@ -341,7 +358,7 @@
                     localStorageService.set($$service.$$ratesCookieName, currencyRateList);
                     deferred.resolve(exchange);
                 }, function(response) {
-                    deferred.reject(response);
+                    deferred.reject(response.error && response.error.info ? response.error.info : "Error getting currencies");
                 });
             }
             return deferred.promise;
@@ -374,7 +391,7 @@
             });
             return exchange;
         };
-        this.init();
+        this.$init();
     }
 })();
 
@@ -446,12 +463,12 @@
             $$service.geocoderSvc.geocode({
                 address: address
             }, function(results, status) {
-                if (data.status == "OK") {
-                    deferred.resolve(data.results[0]);
+                if (status == google.maps.GeocoderStatus.OK) {
+                    deferred.resolve(results[0]);
                 } else {
-                    deferred.reject("Error getting latlong : " + data.status);
+                    deferred.reject("Error getting latlong : " + status);
                 }
-            }, function(error) {
+            }, function(response) {
                 $log.error("Error getting latlong: " + response.statusText + " (code: " + response.status + ")");
                 deferred.reject("Error getting latlong");
             });
@@ -467,7 +484,7 @@
                 } else {
                     deferred.reject("Error getting place : " + status);
                 }
-            }, function(error) {
+            }, function(response) {
                 $log.error("Error getting place: " + response.statusText + " (code: " + response.status + ")");
                 deferred.reject("Error getting place");
             });
@@ -498,7 +515,7 @@
                 type: "airport"
             };
             $$service.placesSvc.textSearch(request, function(results, status) {
-                if (status == "OK") {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
                     var airports = [];
                     for (var i = 0; i < results.length; i++) {
                         var result = results[i];
@@ -546,7 +563,7 @@
                 type: "train_station"
             };
             $$service.placesSvc.textSearch(request, function(results, status) {
-                if (status == "OK") {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
                     var trainStations = [];
                     for (var i = 0; i < results.length; i++) {
                         var result = results[i];
@@ -868,9 +885,10 @@
             history.scrollRestoration = "manual";
         }
         var $$service = {};
-        $$service.logout = function() {
+        $$service.logout = function(url) {
             $log.info("Logging out...");
-            $http.post("logout", {}).then(function() {
+            url = url || "logout";
+            $http.post(url, {}).then(function() {
                 $log.info("Logout success. Going back to home...");
             }, function(error) {
                 $log.error("Logout failed!");
@@ -885,23 +903,26 @@
         $$service.go = function(url, reload, newPage) {
             reload ? location.assign(url) : newPage ? $window.open(url) : $location.url(url);
         };
+        $$service.goBlank = function(url) {
+            return $$service.go(url, false, true);
+        };
         $$service.goSecure = function(url) {
             location.assign("/secure/" + (url || ""));
         };
         $$service.goToState = function(stateName, params, options) {
-            $state.go(stateName, params, options);
+            return $state.go(stateName || $state.current, params, options);
         };
         $$service.updateCurrentStateParams = function(params) {
-            $state.go($state.current, angular.merge({}, $state.params, params));
+            return $state.go($state.current, angular.merge({}, $state.params, params));
         };
         $$service.reload = function() {
             $window.location.reload();
         };
         $$service.reloadState = function(url, params) {
             if (!url) {
-                $state.reload();
+                return $state.reload();
             } else {
-                $state.transitionTo(url, params, {
+                return $state.transitionTo(url, params, {
                     reload: true,
                     inherit: false,
                     notify: true
@@ -909,7 +930,7 @@
             }
         };
         $$service.reloadHome = function() {
-            $$service.reloadState("home");
+            return $$service.reloadState("home");
         };
         $$service.redirect = function(page, timeout) {
             $timeout(function() {
@@ -971,7 +992,7 @@
             $window.history.back();
         };
         $$service.back = function(args) {
-            $rootScope.$broadcast("back", args);
+            AppOptions.page && AppOptions.page.backState ? $$service.goToState(AppOptions.page.backState) : $rootScope.$broadcast("back", args);
         };
         $$service.next = function(args) {
             $rootScope.$broadcast("next", args);
@@ -1038,12 +1059,22 @@
     angular.module("itaca.services").factory("TransitionsListener", TransitionsListenerFactory);
     function TransitionsListenerFactory($transitions, $translate, $log, InitSrv, AppOptions, Navigator, Loading) {
         var $$service = {};
+        $$service.$$deregisters = {
+            onBefore: [],
+            onSuccess: [],
+            onError: []
+        };
         $$service.enable = function() {
-            $transitions.onBefore({}, startLoading);
-            $transitions.onSuccess({}, finishStateChange);
-            $transitions.onSuccess({}, stopLoading);
-            $transitions.onError({}, finishStateChangeError);
-            $transitions.onError({}, stopLoading);
+            $$service.$$deregisters = {
+                onBefore: [],
+                onSuccess: [],
+                onError: []
+            };
+            $$service.$$deregisters.onBefore.push($transitions.onBefore({}, startLoading));
+            $$service.$$deregisters.onSuccess.push($transitions.onSuccess({}, finishStateChange));
+            $$service.$$deregisters.onSuccess.push($transitions.onSuccess({}, stopLoading));
+            $$service.$$deregisters.onError.push($transitions.onError({}, finishStateChangeError));
+            $$service.$$deregisters.onError.push($transitions.onError({}, stopLoading));
             function nonRootState(state) {
                 return !_.isEmpty(state.name);
             }
@@ -1065,12 +1096,15 @@
                     AppOptions.page.currentItem = angular.isFunction(toState.data.menuItem) ? toState.data.menuItem() : toState.data.menuItem;
                 }
                 if (_.isNil(location.hash) || _.isEmpty(location.hash)) {
-                    Navigator.topAnimated(true);
+                    !transition.dynamic() && Navigator.topAnimated(true);
                 }
                 AppOptions.page = AppOptions.page || {};
-                AppOptions.page.backBtn = !(toState.backBtn == false);
-                toState.navEffect == false ? Navigator.disableNavEffect() : Navigator.enableNavEffect();
                 AppOptions.page.hideNav = toState.data && toState.data.hideNav || false;
+                AppOptions.page.backBtn = toState.data && toState.data.backBtn || false;
+                AppOptions.page.backState = toState.data && toState.data.backState || null;
+                AppOptions.page.hideSearch = toState.data && toState.data.hideSearch || false;
+                AppOptions.page.hideTopButton = toState.data && toState.data.hideTopButton || false;
+                toState.navEffect == false ? Navigator.disableNavEffect() : Navigator.enableNavEffect();
             }
             function finishStateChangeError(transition) {
                 var toState = transition.to();
@@ -1089,6 +1123,20 @@
                     !transition.dynamic() && Loading.stop();
                     Navigator.closeLeftMenu();
                 }
+            }
+        };
+        $$service.disable = function(type) {
+            if (type) {
+                var deregisterFnArr = $$service.$$deregisters[type];
+                _.forEach(deregisterFnArr, function(deregisterFn) {
+                    angular.isFunction(deregisterFn) && deregisterFn();
+                });
+            } else {
+                _.forEach($$service.$$deregisters, function(deregisterFnArr, hookType) {
+                    _.forEach(deregisterFnArr, function(deregisterFn) {
+                        angular.isFunction(deregisterFn) && deregisterFn();
+                    });
+                });
             }
         };
         return $$service;
