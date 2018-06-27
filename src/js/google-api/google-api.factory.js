@@ -119,7 +119,7 @@
 			var deferred = $q.defer();
 		
 			var request = {
-				location: {lat: latLong.geometry.location.lat, lng: latLong.geometry.location.lng},
+				location: {lat: latLong.geometry.location.lat(), lng: latLong.geometry.location.lng()},
 			    radius: 50000,
 			    query : 'airport '+ latLong.address_components[0].long_name +' principal',
 			    type: 'airport'
@@ -140,8 +140,8 @@
 					    	airport.city 	= "";
 					    	airport.address = result.vicinity; 
 					    	airport.name 	= result.name;
-					    	airport.lat		= result.geometry.location.lat;
-					    	airport.lng		= result.geometry.location.lng;
+					    	airport.lat		= result.geometry.location.lat();
+					    	airport.lng		= result.geometry.location.lng();
 					    	airport.type	= "AIRPORT";
 					    	airports.push(airport);	
 				    	}
@@ -181,7 +181,7 @@
 			var deferred = $q.defer();
 			
 			var request = {
-				location: {lat: latLong.geometry.location.lat, lng: latLong.geometry.location.lng},
+				location: {lat: latLong.geometry.location.lat(), lng: latLong.geometry.location.lng()},
 			    radius: 50000,
 			    query : 'train station '+ latLong.address_components[0].long_name +' principal',
 			    type: 'train_station'
@@ -202,8 +202,8 @@
 					    	trainStation.city 	 = "";
 					    	trainStation.address = result.vicinity; 
 					    	trainStation.name 	 = result.name;
-					    	trainStation.lat 	 = result.geometry.location.lat;
-					    	trainStation.lng 	 = result.geometry.location.lng;
+					    	trainStation.lat 	 = result.geometry.location.lat();
+					    	trainStation.lng 	 = result.geometry.location.lng();
 					    	trainStation.type	 = "TRAIN_STATION";
 					    	trainStations.push(trainStation);
 				    	}
