@@ -159,6 +159,10 @@
     		AppOptions.page && AppOptions.page.backState ? $$service.goToState(AppOptions.page.backState) : $rootScope.$broadcast('back', args);
     	};
     	
+    	$$service.goBackState = function() {
+    		$state.go("^");
+    	};
+    	
     	$$service.next = function(args){
     		$rootScope.$broadcast('next', args);
     	};

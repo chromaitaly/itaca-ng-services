@@ -68,7 +68,7 @@
     			var toState = transition.to();
     			var error = transition.error();
     			
-    			if (!toState.redirectTo && !error.redirected){
+    			if (!toState.redirectTo && !error.redirected && _.includes([4, 6], error.type)){
     				$log.error("Error loading page " + toState.url + " (" + toState.name + "): " + error);
     			}
     		}
