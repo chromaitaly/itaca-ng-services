@@ -15,6 +15,7 @@
     	var methods = {
     			managersTerms: {method: "GET", url: $$service.url + "/terms/manager"},
     			guestsTerms: {method: "GET", url: $$service.url + "/terms/guest"},
+    			cookies: {method: "GET", url: $$service.url + "/cookies"},
     			privacy: {method: "GET", url: $$service.url + "/privacy/guest"},
     			aboutUs: {method: "GET", url: $$service.url + "/aboutUs"},
     			faq: {method: "GET", url: $$service.url + "/faq"},
@@ -52,6 +53,18 @@
 	
 			return deferred.promise;
 			
+		};
+		
+		$$service.cookies = function() {
+			var deferred = $q.defer();
+			
+			this.REQUEST.cookies().$promise.then(function(response) {
+				deferred.resolve(response);
+			}, function(response) {
+				deferred.reject(response.data && response.data.message ? response.data.message :  "Error getting cookies");
+			});
+	
+			return deferred.promise;
 		};
 		
 		$$service.privacy = function() {
