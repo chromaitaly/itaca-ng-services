@@ -507,8 +507,8 @@
             var deferred = $q.defer();
             var request = {
                 location: {
-                    lat: latLong.geometry.location.lat,
-                    lng: latLong.geometry.location.lng
+                    lat: latLong.geometry.location.lat(),
+                    lng: latLong.geometry.location.lng()
                 },
                 radius: 5e4,
                 query: "airport " + latLong.address_components[0].long_name + " principal",
@@ -525,8 +525,8 @@
                             airport.city = "";
                             airport.address = result.vicinity;
                             airport.name = result.name;
-                            airport.lat = result.geometry.location.lat;
-                            airport.lng = result.geometry.location.lng;
+                            airport.lat = result.geometry.location.lat();
+                            airport.lng = result.geometry.location.lng();
                             airport.type = "AIRPORT";
                             airports.push(airport);
                         }
@@ -555,8 +555,8 @@
             var deferred = $q.defer();
             var request = {
                 location: {
-                    lat: latLong.geometry.location.lat,
-                    lng: latLong.geometry.location.lng
+                    lat: latLong.geometry.location.lat(),
+                    lng: latLong.geometry.location.lng()
                 },
                 radius: 5e4,
                 query: "train station " + latLong.address_components[0].long_name + " principal",
@@ -573,8 +573,8 @@
                             trainStation.city = "";
                             trainStation.address = result.vicinity;
                             trainStation.name = result.name;
-                            trainStation.lat = result.geometry.location.lat;
-                            trainStation.lng = result.geometry.location.lng;
+                            trainStation.lat = result.geometry.location.lat();
+                            trainStation.lng = result.geometry.location.lng();
                             trainStation.type = "TRAIN_STATION";
                             trainStations.push(trainStation);
                         }
@@ -969,7 +969,7 @@
             }
         };
         $$service.scrollToAnimated = function(element, behavior) {
-            var el = angular.element(element)[0];
+            var el = angular.element(_.isString(element) ? document.querySelector(element) : element)[0];
             if (!el) {
                 return;
             }
@@ -993,6 +993,9 @@
         };
         $$service.back = function(args) {
             AppOptions.page && AppOptions.page.backState ? $$service.goToState(AppOptions.page.backState) : $rootScope.$broadcast("back", args);
+        };
+        $$service.goBackState = function() {
+            $state.go("^");
         };
         $$service.next = function(args) {
             $rootScope.$broadcast("next", args);
@@ -1055,6 +1058,163 @@
 
 (function() {
     "use strict";
+    TemplateFactory.$inject = [ "$resource", "$q" ];
+    angular.module("itaca.factory").factory("Template", TemplateFactory);
+    function TemplateFactory($resource, $q) {
+        var $$service = {};
+        $$service.url = "/api/rs/public/template";
+        var methods = {
+            managersTerms: {
+                method: "GET",
+                url: $$service.url + "/terms/manager"
+            },
+            guestsTerms: {
+                method: "GET",
+                url: $$service.url + "/terms/guest"
+            },
+            cookies: {
+                method: "GET",
+                url: $$service.url + "/cookies"
+            },
+            privacy: {
+                method: "GET",
+                url: $$service.url + "/privacy/guest"
+            },
+            aboutUs: {
+                method: "GET",
+                url: $$service.url + "/aboutUs"
+            },
+            faq: {
+                method: "GET",
+                url: $$service.url + "/faq"
+            },
+            security: {
+                method: "GET",
+                url: $$service.url + "/security"
+            },
+            contacts: {
+                method: "GET",
+                url: $$service.url + "/contacts"
+            },
+            reviewsGuidelines: {
+                method: "GET",
+                url: $$service.url + "/reviews/guidelines/guest"
+            },
+            reviewsInfo: {
+                method: "GET",
+                url: $$service.url + "/reviews/info"
+            },
+            reviewsAppInfo: {
+                method: "GET",
+                url: $$service.url + "/reviews/appinfo"
+            }
+        };
+        $$service.REQUEST = $resource($$service.url, {}, methods);
+        $$service.managersTerms = function() {
+            var deferred = $q.defer();
+            this.REQUEST.managersTerms().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting terms and conditions");
+            });
+            return deferred.promise;
+        };
+        $$service.guestsTerms = function() {
+            var deferred = $q.defer();
+            this.REQUEST.guestsTerms().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting terms and conditions");
+            });
+            return deferred.promise;
+        };
+        $$service.cookies = function() {
+            var deferred = $q.defer();
+            this.REQUEST.cookies().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting cookies");
+            });
+            return deferred.promise;
+        };
+        $$service.privacy = function() {
+            var deferred = $q.defer();
+            this.REQUEST.privacy().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting privacy");
+            });
+            return deferred.promise;
+        };
+        $$service.aboutUs = function() {
+            var deferred = $q.defer();
+            this.REQUEST.aboutUs().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting about us");
+            });
+            return deferred.promise;
+        };
+        $$service.faq = function() {
+            var deferred = $q.defer();
+            this.REQUEST.faq().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting faq");
+            });
+            return deferred.promise;
+        };
+        $$service.security = function() {
+            var deferred = $q.defer();
+            this.REQUEST.security().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting security");
+            });
+            return deferred.promise;
+        };
+        $$service.contacts = function() {
+            var deferred = $q.defer();
+            this.REQUEST.contacts().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting contacts");
+            });
+            return deferred.promise;
+        };
+        $$service.reviewsGuidelines = function() {
+            var deferred = $q.defer();
+            this.REQUEST.reviewsGuidelines().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting reviews guidelines");
+            });
+            return deferred.promise;
+        };
+        $$service.reviewsInfo = function() {
+            var deferred = $q.defer();
+            this.REQUEST.reviewsInfo().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting reviews info");
+            });
+            return deferred.promise;
+        };
+        $$service.reviewsAppInfo = function() {
+            var deferred = $q.defer();
+            this.REQUEST.reviewsAppInfo().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting reviews app info");
+            });
+            return deferred.promise;
+        };
+        return $$service;
+    }
+})();
+
+(function() {
+    "use strict";
     TransitionsListenerFactory.$inject = [ "$transitions", "$translate", "$log", "InitSrv", "AppOptions", "Navigator", "Loading" ];
     angular.module("itaca.services").factory("TransitionsListener", TransitionsListenerFactory);
     function TransitionsListenerFactory($transitions, $translate, $log, InitSrv, AppOptions, Navigator, Loading) {
@@ -1109,7 +1269,7 @@
             function finishStateChangeError(transition) {
                 var toState = transition.to();
                 var error = transition.error();
-                if (!toState.redirectTo && !error.redirected) {
+                if (!toState.redirectTo && !error.redirected && _.includes([ 4, 6 ], error.type)) {
                     $log.error("Error loading page " + toState.url + " (" + toState.name + "): " + error);
                 }
             }
