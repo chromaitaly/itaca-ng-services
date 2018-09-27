@@ -4,7 +4,7 @@
     angular.module("itaca.services").factory('TransitionsListener', TransitionsListenerFactory);
     
     /* @ngInject */
-    function TransitionsListenerFactory($transitions, $translate, $log, InitSrv, AppOptions, Navigator, Loading) {
+    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, InitSrv, AppOptions, Navigator, Loading) {
     	var $$service = {};
     	
     	$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
@@ -74,7 +74,12 @@
     		}
     		
     		function startLoading(transition) {
-    			!transition.dynamic() && Loading.start();
+    			if (!transition.dynamic() && !transition.to().isDialog) {
+    				// chiudo eventuale dialog
+    				$mdDialog.cancel();
+    				// start loading
+    				Loading.start();
+    			}
     		}
 
     		function stopLoading(transition) {
@@ -83,7 +88,7 @@
 
     			if (transition.success || (!toState.redirectTo && !error.redirected)) {
     				// stop loading
-    				!transition.dynamic() && Loading.stop();
+    				!transition.dynamic() && !toState.isDialog && Loading.stop();
     				// chiude un'eventuale loading-progress attiva
 //    				LoadingProgress.stop();
     				// chiusura menu laterale
