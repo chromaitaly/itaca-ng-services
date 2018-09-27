@@ -1,18 +1,37 @@
 (function() {
     'use strict';
     
-    angular.module("itaca.services").factory("Navigator", NavigatorFactory);
+    angular.module("itaca.services").provider("Navigator", NavigatorProvider);
     
-    /* @ngInject */
-    function NavigatorFactory($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
-    		$state, $rootScope, AppOptions){
+	function NavigatorProvider() {
+		var $$offset = 0;
+
+		this.init = function(offset) {
+			this.setDefaultOffset(offset);
+		};
+		
+		this.setDefaultOffset = function(/* Top-offset pixels */ offset) {
+			if (_.isFinite(offset)) {
+				$$offset = offset;
+			}
+		};
+		
+		this.$get = /* @ngInject */ function($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+	    		$state, $rootScope, AppOptions) {
+			return new Navigator($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+		    		$state, $rootScope, AppOptions, $$offset);
+		};
+	}
+    
+    function Navigator($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+    		$state, $rootScope, AppOptions, offset){
     	
     	// disable browser scroll restore
 		if ('scrollRestoration' in history) {
 			history.scrollRestoration = 'manual';
 		}
     	
-    	var $$service = {};
+    	var $$service = {offset: _.isFinite(offset) ? offset : 0};
     	
     	$$service.logout = function(url){
     		$log.info("Logging out...");
@@ -82,24 +101,31 @@
     		}, isFinite(timeout) ? timeout : 5000);
     	};
     	
-    	$$service.goToAnchor = function(anchor) {
+    	$$service.goToAnchor = function(anchor, offset) {
     		if (anchor) {
     			// rimuovo l'eventuale # iniziale
     			anchor = anchor.startsWith("#") ? anchor.substring(1) : anchor;
     			// scrollo
     			var id = document.getElementById(anchor);
     			if(id != null){
-    				$document.scrollToElementAnimated(angular.element(id));
+    				$document.scrollToElementAnimated(angular.element(id), offset && _.isFinite(parseInt(offset)) ? parseInt(offset) : $$service.offset);
     			}
     		}
     	};
     	
-    	$$service.scrollToAnchor = function(anchor) {
+    	$$service.scrollToAnchor = function(anchor, offset) {
     		if (anchor) {
     			// rimuovo l'eventuale # iniziale
     			anchor = anchor.startsWith("#") ? anchor.substring(1) : anchor;
+    			
+    			// memorizzo offset originale
+    			var oriOffset = $anchorScroll.yOffset;
+    			// imposto l'offset
+    			$anchorScroll.yOffset = offset && _.isFinite(parseInt(offset)) ? parseInt(offset) : $$service.offset;
     			// scrollo
     			$anchorScroll(anchor);
+    			// reimposto l'offset originale
+    			$anchorScroll.yOffset = oriOffset;
     		}
     	};
     	
@@ -133,6 +159,8 @@
     		}
     		
     		el.scrollIntoView({ 
+    			block: "start", 
+    			inline: "nearest",
     			"behavior": behavior || 'smooth' 
 			});
     	};
