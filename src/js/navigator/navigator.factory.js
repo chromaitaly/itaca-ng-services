@@ -126,7 +126,7 @@
     	};
     	
     	$$service.scrollToAnimated = function(element, behavior) {
-    		var el = angular.element(element)[0];
+    		var el = angular.element( _.isString(element) ? document.querySelector(element) : element)[0];
     		
     		if (!el) {
     			return;
