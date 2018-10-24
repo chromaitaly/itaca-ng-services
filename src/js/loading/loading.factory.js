@@ -5,7 +5,7 @@
 (function() {
     'use strict';
     
-    angular.module("itaca.services").factory('Loading', LoadingFactory);
+    angular.module("itaca.components").factory('Loading', LoadingFactory);
     
     /* @ngInject */
     function LoadingFactory($rootScope, $timeout, HtmlUtils){
@@ -16,7 +16,7 @@
     			var scope = {$ctrl: angular.merge({}, opts, {active: true})};
     			
     			var el = "<ch-loading ng-if=\"$ctrl.active\" message=\"{{$ctrl.message}}\" message-key=\"{{$ctrl.messageKey}}\"" +
-					"icon-class=\"{{$ctrl.iconClass}}\"></ch-loading>";
+    				"icon-class=\"{{$ctrl.iconClass}}\" siblings-class=\"blur\"></ch-loading>";
     			
     			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
