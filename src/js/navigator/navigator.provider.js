@@ -199,6 +199,10 @@
 			$rootScope.$broadcast("loadUserDetails");
 		};
 		
+		$$service.refreshLocale =  function() {
+			$rootScope.$broadcast("locale-changed");
+		};
+		
 		$$service.refreshNotifications = function(type) {
 			if (type) {
 				$rootScope.$broadcast("refresh-" + type  + "-notifications");
