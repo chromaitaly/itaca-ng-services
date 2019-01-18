@@ -52,7 +52,7 @@
 	 	this.$$ratesCookieName = ratesCookieName;
 	 	this.$$accessKey = accessKey;
 	 	
-    	this.API = $resource("http://data.fixer.io/api/latest", {access_key: $$service.$$accessKey});
+    	this.API = $resource("https://data.fixer.io/api/latest", {access_key: $$service.$$accessKey});
 	 	
 	 	this.current = {iso : 'EUR', symbol: "€", rate : 1};
 	 	

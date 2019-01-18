@@ -1,12 +1,13 @@
 (function() {
 	'use strict';
 	
-	angular.module("itaca.services").component('chLoading', {
+	angular.module("itaca.components").component('chLoading', {
 		bindings: {
 			message: "@",
 			messageKey: "@",
 			progressDiameter: "@",
-			contClass: "@"
+			contClass: "@",
+			siblingsClass: "@"
 		},
 		controller: LoadingModalCtrl,
 		template: 
@@ -27,6 +28,7 @@
 		
 		this.$postLink = function() {
 			ctrl.$disableScroll();
+			ctrl.$manageSiblings(!_.isNil(ctrl.siblingsClass));
 		};
 		
 		this.$onInit = function() {
@@ -34,12 +36,28 @@
 			ctrl.progressDiameter = ctrl.progressDiameter || 80;
 		};
 		
+		this.$onChanges = function(changesObj) {
+			if (changesObj.siblingsClass) {
+				ctrl.$manageSiblings(!_.isNil(ctrl.siblingsClass));
+			}
+		};
+		
 		this.$onDestroy = function() {
+			ctrl.$manageSiblings(false);
 			ctrl.$restoreScroll();
 		};
 		
 		this.$disableScroll = function() {
 			ctrl.$restoreScroll = $mdUtil.disableScrollAround($element);
+		};
+		
+		this.$manageSiblings = function(apply) {
+			var children = $element.parent().children();
+			
+			// nascondo tutti i nodi figli
+			apply ? children.addClass(ctrl.siblingsClass) : children.removeClass(ctrl.siblingsClass);
+			// mostro il nodo del loading
+			$element.removeClass(ctrl.siblingsClass);
 		};
 	}
 })();

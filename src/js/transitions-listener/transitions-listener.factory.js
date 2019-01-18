@@ -38,8 +38,9 @@
     				}, _.stubFalse);
     			}
     			
+    			AppOptions.page = AppOptions.page || {};
+    			
     			if (toState.data && toState.data.menuItem) {
-    				AppOptions.page = AppOptions.page || {};
     				AppOptions.page.currentItem = angular.isFunction(toState.data.menuItem) ? toState.data.menuItem() : toState.data.menuItem;
     			}
     			
@@ -49,12 +50,20 @@
     			}
     			
     			// mostra/nasconde back button
-    			AppOptions.page = AppOptions.page || {};
+    			AppOptions.page.backBtn = (toState.data && toState.data.backBtn) || false;
+    			AppOptions.page.backState = null;
+    			AppOptions.page.backText = toState.data && toState.data.backText ? toState.data.backText : null; 
+    			
+    			if (_.includes(transition.getResolveTokens(), "backState")) {
+    				AppOptions.page = AppOptions.page || {};
+					AppOptions.page.backState = transition.injector().get("backState");
+    			
+    			} else if (toState.data && toState.data.backState) {
+					AppOptions.page.backState = toState.data.backState;
+    			}
+    			
     			// mostra/nasconde nav
     			AppOptions.page.hideNav = (toState.data && toState.data.hideNav) || false;
-    			// mostra/nasconde back button
-    			AppOptions.page.backBtn = (toState.data && toState.data.backBtn) || false;
-    			AppOptions.page.backState = (toState.data && toState.data.backState) || null;
     			// mostra/nasconde search button
     			AppOptions.page.hideSearch = (toState.data && toState.data.hideSearch) || false;
     			// nasconde/mostra il go-to-top button
@@ -76,7 +85,7 @@
     		function startLoading(transition) {
     			if (!transition.dynamic() && !transition.to().isDialog) {
     				// chiudo eventuale dialog
-    				$mdDialog.cancel();
+    				$mdDialog.cancel(transition.to());
     				// start loading
     				Loading.start();
     			}
