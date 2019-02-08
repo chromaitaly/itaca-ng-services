@@ -30,12 +30,43 @@
 			return deferred.promise;
 		};
 		
+		$$service.places = function(filter, nationalityAlpha2Code) {
+			var deferred = $q.defer();
+	
+			$$service.autocompleteSvc.getPlacePredictions({ input: filter, types: ['(regions)'], componentRestrictions: {country: nationalityAlpha2Code} }, function(predictions, status) {
+			    if (status != google.maps.places.PlacesServiceStatus.OK) {
+			    	deferred.reject("Error getting cities: " + status);
+			    	
+			    } else {
+			    	deferred.resolve(predictions);
+			    }
+			});
+	
+			return deferred.promise;
+		};
+		
 		$$service.addresses = function(filter, nationalityAlpha2Code) {
 			var deferred = $q.defer();
 	
 			$$service.autocompleteSvc.getPlacePredictions({ input: filter, types: ['address'], componentRestrictions: {country: nationalityAlpha2Code} }, function(predictions, status) {
 			    if (status != google.maps.places.PlacesServiceStatus.OK) {
 			    	deferred.reject("Error getting addresses: " + status);
+			    	
+			    } else {
+			    	deferred.resolve(predictions);
+			    }
+			});
+			
+			return deferred.promise;
+		};
+		
+		// esercizi commerciali
+		$$service.business = function(filter, nationalityAlpha2Code) {
+			var deferred = $q.defer();
+	
+			$$service.autocompleteSvc.getPlacePredictions({ input: filter, types: ['establishment'], componentRestrictions: {country: nationalityAlpha2Code} }, function(predictions, status) {
+			    if (status != google.maps.places.PlacesServiceStatus.OK) {
+			    	deferred.reject("Error getting establishment: " + status);
 			    	
 			    } else {
 			    	deferred.resolve(predictions);
