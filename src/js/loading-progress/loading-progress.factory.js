@@ -15,10 +15,10 @@
     		if (!$$service.$$loadingScope) {
     			var scope = {$ctrl: angular.merge({}, opts, {active: true})};
     			
-    			var el = "<ch-loading-progress ng-if=\"$ctrl.active\" message=\"{{$ctrl.message}}\" message-key=\"{{$ctrl.messageKey}}\" " +
-					"error-message=\"{{$ctrl.error ? $ctrl.errorMessage : ''}}\" error-message-key=\"{{$ctrl.error ? $ctrl.errorMessageKey : ''}}\" " +
-					"icon-class=\"{{$ctrl.iconClass}}\" error-icon-class=\"{{$ctrl.errorIconClass}}\" " +
-					"hide-siblings=\"$ctrl.active\" animation-class=\"animated fadeIn\"></ch-loading-progress>";
+    			var el = "<ch-loading-progress ng-if=\"$ctrl.active\" message=\"$ctrl.message\" message-key=\"$ctrl.messageKey\" " +
+    					"error-message=\"$ctrl.error ? $ctrl.errorMessage : ''\" error-message-key=\"$ctrl.error ? $ctrl.errorMessageKey : ''\" " +
+    					"icon-class=\"{{$ctrl.iconClass}}\" error-icon-class=\"{{$ctrl.errorIconClass}}\" " +
+    					"hide-siblings=\"$ctrl.active\" animation-class=\"animated fadeIn\"></ch-loading-progress>";
     			
     			$$service.$$loadingScope = HtmlUtils.addElement(el, scope, null, true);
     		
