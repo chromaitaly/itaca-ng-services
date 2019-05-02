@@ -3,7 +3,7 @@
     
     angular.module("itaca.services").provider("Navigator", NavigatorProvider);
     
-	function NavigatorProvider() {
+    function NavigatorProvider() {
 		var $$offset = 0;
 
 		this.init = function(offset) {
@@ -16,14 +16,14 @@
 			}
 		};
 		
-		this.$get = /* @ngInject */ function($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+		this.$get = /* @ngInject */ function($q, $http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
 	    		$state, $rootScope, AppOptions) {
-			return new Navigator($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+			return new Navigator($q, $http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
 		    		$state, $rootScope, AppOptions, $$offset);
 		};
 	}
     
-    function Navigator($http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
+    function Navigator($q, $http, $window, $document, $animateCss, $log, $location, $timeout, $anchorScroll, $mdSidenav, 
     		$state, $rootScope, AppOptions, offset){
     	
     	// disable browser scroll restore
@@ -139,14 +139,20 @@
     		}
     	};
     	
-    	$$service.topAnimated = function(setOnload) {
-    		$$service.scrollToAnimated(document.body, 0, 1250);
-//    		$document.scrollTopAnimated(0);
+    	$$service.topAnimated = function(setOnload, behavior) {
+    		window.scrollTo({
+    			left: 0, 
+    			top: 0,
+    			"behavior": behavior || 'smooth'
+    		});
     		
     		if (setOnload) {
     			window.onload = function(){
-//    				$document.scrollTopAnimated(0);
-    				$$service.scrollToAnimated(document.body, 0, 1250);
+    				window.scrollTo({
+    	    			left: 0, 
+    	    			top: 0,
+    	    			"behavior": behavior || 'smooth'
+    	    		});
     			};
     		}
     	};
@@ -166,17 +172,23 @@
     	};
     	
     	$$service.toggleLeftMenu = function() {
-    		$mdSidenav('leftMenu').toggle();
-    		AppOptions.hideLeftMenu = !AppOptions.hideLeftMenu;
+    		$q.when($mdSidenav('leftMenu', true)).then(function(instance) {
+    			instance.toggle();
+	    		AppOptions.hideLeftMenu = !AppOptions.hideLeftMenu;
+    		});
     	};
     	
     	$$service.closeLeftMenu = function(keepClosed) {
-    		$mdSidenav('leftMenu').close();
-    		AppOptions.hideLeftMenu = keepClosed;
+    		$q.when($mdSidenav('leftMenu', true)).then(function(instance) {
+    			instance.close();
+	    		!_.isNil(keepClosed) && (AppOptions.hideLeftMenu = keepClosed);
+    		});
     	};
     	
     	$$service.isLeftMenuOpen = function() {
-    		return $mdSidenav('leftMenu').isOpen();
+    		return $q.when($mdSidenav('leftMenu', true)).then(function(instance) {
+    			return instance.isOpen();
+    		});
     	};
     	
     	$$service.historyBack = function(){
