@@ -9,6 +9,9 @@
 			errorMessageKey: "<",
 			iconClass: "@",
 			errorIconClass: "@",
+			alertMessage: "<?",
+			alertMessageKey: "<?",
+			hideAlert: "<?",
 			progressDiameter: "@",
 			contClass: "@",
 			hideSiblings: "<",
@@ -39,6 +42,12 @@
 						"<span ng-if=\"!$ctrl.errorMessage && $ctrl.errorMessageKey\" translate=\"{{$ctrl.errorMessageKey}}\"></span>" +
 					"</div>" +
 				"</div>" +
+				"<div ng-if=\"$ctrl.hideAlert\" layout=\"column\" layout-padding layout-align=\"center center\">" +
+					"<div ng-if=\"$ctrl.alertMessage || $ctrl.alertMessageKey\" class=\"text-center\">" +
+						"<small ng-if=\"$ctrl.alertMessage\" ng-bind=\"$ctrl.alertMessage\"></small>" +
+						"<small ng-if=\"!$ctrl.alertMessage && $ctrl.alertMessageKey\" translate=\"{{$ctrl.alertMessageKey}}\"></small>" +
+					"</div>" +
+				"</div>" +
 			"</div>"
 	});
 
@@ -55,6 +64,8 @@
 			ctrl.contClass = ctrl.contClass || "bg-primary text-white md-title";
 			ctrl.errorIconClass = ctrl.errorIconClass || "mdi mdi-alert-circle-outline md-70 text-white";
 			ctrl.progressDiameter = ctrl.progressDiameter || 150;
+			
+			ctrl.alertMessageKey = ctrl.alertMessageKey || "common.dont.close.window";
 		};
 		
 		this.$onDestroy = function() {

@@ -14,6 +14,27 @@
 		var methods = {
 			get: {method: "GET", url: $$service.url}
 		};
+		
+		$$service.textSearch = function(query, location, radius, type) {
+			var deferred = $q.defer();
+	
+			var request = {
+				query : query,
+				location: location,
+			    radius: radius,
+			    type: type
+			};
+			
+			$$service.placesSvc.textSearch(request, function(results, status){
+				if (status == google.maps.places.PlacesServiceStatus.OK) {
+					deferred.resolve(results);
+			    } else {
+					deferred.reject("Error getting place : " + status);
+				}
+			});
+			
+			return deferred.promise;
+		};
 	
 		$$service.cities = function(filter, nationalityAlpha2Code) {
 			var deferred = $q.defer();
