@@ -3,7 +3,7 @@
     
     angular.module("itaca.services").provider("Navigator", NavigatorProvider);
     
-	function NavigatorProvider() {
+    function NavigatorProvider() {
 		var $$offset = 0;
 
 		this.init = function(offset) {
@@ -139,14 +139,20 @@
     		}
     	};
     	
-    	$$service.topAnimated = function(setOnload) {
-    		$$service.scrollToAnimated(document.body, 0, 1250);
-//    		$document.scrollTopAnimated(0);
+    	$$service.topAnimated = function(setOnload, behavior) {
+    		window.scrollTo({
+    			left: 0, 
+    			top: 0,
+    			"behavior": behavior || 'smooth'
+    		});
     		
     		if (setOnload) {
     			window.onload = function(){
-//    				$document.scrollTopAnimated(0);
-    				$$service.scrollToAnimated(document.body, 0, 1250);
+    				window.scrollTo({
+    	    			left: 0, 
+    	    			top: 0,
+    	    			"behavior": behavior || 'smooth'
+    	    		});
     			};
     		}
     	};
@@ -175,7 +181,7 @@
     	$$service.closeLeftMenu = function(keepClosed) {
     		$q.when($mdSidenav('leftMenu', true)).then(function(instance) {
     			instance.close();
-	    		AppOptions.hideLeftMenu = keepClosed;
+	    		!_.isNil(keepClosed) && (AppOptions.hideLeftMenu = keepClosed);
     		});
     	};
     	
@@ -188,6 +194,7 @@
     	$$service.historyBack = function(){
     		$window.history.back();
     	};
+    	
     	$$service.back = function(args){
     		AppOptions.page && AppOptions.page.backState ? $$service.goToState(AppOptions.page.backState) : $rootScope.$broadcast('back', args);
     	};
