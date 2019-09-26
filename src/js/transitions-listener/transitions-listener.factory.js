@@ -4,7 +4,7 @@
     angular.module("itaca.services").factory('TransitionsListener', TransitionsListenerFactory);
     
     /* @ngInject */
-    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
+    function TransitionsListenerFactory($transitions, $location, $translate, $log, $mdDialog, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
     	var $$service = {};
     	
     	$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
@@ -84,10 +84,14 @@
     		
     		function startLoading(transition) {
     			if (!transition.dynamic() && !transition.to().isDialog) {
-    				// chiudo eventuale dialog
-    				$mdDialog.cancel(transition.to());
-    				// start loading
-    				!LoadingProgress.isActive() && Loading.start();
+        			if(!transition.to().isDialog) {
+        				// chiudo eventuale dialog
+        				if(_.isNil($location.hash())){
+        					$mdDialog.cancel(transition.to());
+        				}
+        				// start loading
+        				!transition.dynamic() &&!LoadingProgress.isActive() && Loading.start();
+        			}
     			}
     		}
 
