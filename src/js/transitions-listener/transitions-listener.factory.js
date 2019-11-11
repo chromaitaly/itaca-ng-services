@@ -4,7 +4,7 @@
     angular.module("itaca.services").factory('TransitionsListener', TransitionsListenerFactory);
     
     /* @ngInject */
-    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
+    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, $location, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
     	var $$service = {};
     	
     	$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
