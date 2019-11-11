@@ -5,7 +5,7 @@
     
     /* @ngInject */
     function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, $location, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
-    	var $$service = {};
+    	var $$service = {}; 
     	
     	$$service.$$deregisters = {onBefore: [], onSuccess: [], onError: []};
     	

@@ -183,7 +183,7 @@
 					
 				    for (var i = 0; i < results.length; i++) {
 				    	var result = results[i];
-				    	if(result.types.length == 3 && !result.permanently_closed){
+				    	if(result.types.length >= 3 && !result.permanently_closed){
 				    	
 					    	var airport = {};
 					    	

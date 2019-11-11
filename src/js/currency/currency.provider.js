@@ -4,7 +4,7 @@
     angular.module("itaca.services").provider('Currency', CurrencyProvider);
 	
 	function CurrencyProvider() {
-		var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "de5e4f93006ee81e904bf3e0c95f7e28";
+		var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "";
 
 		this.init = function(initObj) {
 			if (initObj) {
@@ -40,8 +40,8 @@
 			}
 		};
 
-		this.$get = /* @ngInject */ function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions) {
-			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, $$accessKey);
+		this.$get = /* @ngInject */ function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, CURRENCY_ID) {
+			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, CURRENCY_ID);
 		};
 	}
     
