@@ -12,7 +12,7 @@
     	
     	$$service.url = "/api/rs/public/about";
     	
-    	var methods = {
+       	var methods = {
 			get: {method: "GET", url: $$service.url},
 			reservationSources: {method: "GET", url: $$service.url + "/reservations/sources"},
 			reservationChannelSources: {method: "GET", url: $$service.url + "/reservations/channels"},
@@ -32,7 +32,7 @@
     		return deferred.promise;
     	};
     	
-    	$$service.reservationSources = function() {
+      	$$service.reservationSources = function() {
     		var deferred = $q.defer();
     		
     		this.API.reservationSources().$promise.then(function(response) {

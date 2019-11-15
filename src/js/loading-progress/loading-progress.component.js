@@ -45,7 +45,7 @@
 				"<div ng-if=\"$ctrl.hideAlert\" layout=\"column\" layout-padding layout-align=\"center center\">" +
 					"<div ng-if=\"$ctrl.alertMessage || $ctrl.alertMessageKey\" class=\"text-center\">" +
 						"<small ng-if=\"$ctrl.alertMessage\" ng-bind=\"$ctrl.alertMessage\"></small>" +
-						"<small ng-if=\"!$ctrl.alertMessage && $ctrl.alertMessageKey\" translate=\"{{$ctrl.alertMessageKey}}\"></small>" +
+						"<small ng-if=\"!$ctrl.alertMessage && $ctrl.alertMessageKey\" translate=\"{{$ctrl.alertMessageKey}}\">Don't close this window</small>" +
 					"</div>" +
 				"</div>" +
 			"</div>"

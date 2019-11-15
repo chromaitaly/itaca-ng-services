@@ -51,12 +51,45 @@
     function AboutFactory($resource, $q) {
         var $$service = {};
         $$service.url = "/api/rs/public/about";
+        var methods = {
+            get: {
+                method: "GET",
+                url: $$service.url
+            },
+            reservationSources: {
+                method: "GET",
+                url: $$service.url + "/reservations/sources"
+            },
+            reservationChannelSources: {
+                method: "GET",
+                url: $$service.url + "/reservations/channels"
+            }
+        };
+        $$service.API = $resource($$service.url, null, methods);
         $$service.get = function() {
             var deferred = $q.defer();
-            $resource(this.url).get().$promise.then(function(response) {
+            this.API.get().$promise.then(function(response) {
                 deferred.resolve(response);
             }, function(response) {
                 deferred.reject(response.data && response.data.message ? response.data.message : "Error getting application info");
+            });
+            return deferred.promise;
+        };
+        $$service.reservationSources = function() {
+            var deferred = $q.defer();
+            this.API.reservationSources().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting reservation sources");
+            });
+            return deferred.promise;
+        };
+        $$service.reservationChannelSources = function() {
+            var deferred = $q.defer();
+            this.API.reservationChannelSources().$promise.then(function(response) {
+                deferred.resolve(response);
+            }, function(response) {
+                deferred.reject(response.data && response.data.message ? response.data.message : "Error getting active reservation channel sources");
             });
             return deferred.promise;
         };
@@ -184,7 +217,7 @@
     "use strict";
     angular.module("itaca.services").provider("Currency", CurrencyProvider);
     function CurrencyProvider() {
-        var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "de5e4f93006ee81e904bf3e0c95f7e28";
+        var $$cookieName = "X-ITACA-CURRENCY", $$ratesCookieName = "X-ITACA-CURRENCY-RATES", $$accessKey = "";
         this.init = function(initObj) {
             if (initObj) {
                 if (initObj.cookieName) {
@@ -213,8 +246,8 @@
                 $$accessKey = accessKey;
             }
         };
-        this.$get = [ "$log", "$cookies", "$q", "$resource", "localStorageService", "iso4217", "AppOptions", function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions) {
-            return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, $$accessKey);
+        this.$get = [ "$log", "$cookies", "$q", "$resource", "localStorageService", "iso4217", "AppOptions", "CURRENCY_ID", function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, CURRENCY_ID) {
+            return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, CURRENCY_ID);
         } ];
     }
     function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName, accessKey) {
@@ -570,7 +603,7 @@
                     var airports = [];
                     for (var i = 0; i < results.length; i++) {
                         var result = results[i];
-                        if (result.types.length == 3 && !result.permanently_closed) {
+                        if (result.types.length >= 3 && !result.permanently_closed) {
                             var airport = {};
                             airport.country = "";
                             airport.city = "";
@@ -661,7 +694,7 @@
             animationClass: "@"
         },
         controller: LoadingProgressCtrl,
-        template: '<div flex="100" layout="column" class="ch-loading-progress text-center {{$ctrl.contClass}}">' + '<div ng-if="!$ctrl.errorMessage && !$ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + '<div ng-if="!$ctrl.iconClass">' + '<md-progress-circular class="ch-progress-white" md-mode="indeterminate" md-diameter="{{$ctrl.progressDiameter}}"></md-progress-circular>' + "</div>" + '<div ng-if="$ctrl.iconClass">' + '<md-icon class="material-icons {{$ctrl.iconClass}}"></md-icon>' + "</div>" + '<div ng-if="$ctrl.message || $ctrl.messageKey" class="text-center">' + '<span ng-if="$ctrl.message" ng-bind="$ctrl.message"></span>' + '<span ng-if="!$ctrl.message && $ctrl.messageKey" translate="{{$ctrl.messageKey}}"></span>' + "</div>" + "</div>" + '<div ng-if="$ctrl.errorMessage || $ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + "<div>" + '<md-icon class="material-icons {{$ctrl.errorIconClass}}"></md-icon>' + "</div>" + '<div class="md-display-2">Oops...</div>' + "<div>" + '<span ng-if="$ctrl.errorMessage" ng-bind="$ctrl.errorMessage"></span>' + '<span ng-if="!$ctrl.errorMessage && $ctrl.errorMessageKey" translate="{{$ctrl.errorMessageKey}}"></span>' + "</div>" + "</div>" + '<div ng-if="$ctrl.hideAlert" layout="column" layout-padding layout-align="center center">' + '<div ng-if="$ctrl.alertMessage || $ctrl.alertMessageKey" class="text-center">' + '<small ng-if="$ctrl.alertMessage" ng-bind="$ctrl.alertMessage"></small>' + '<small ng-if="!$ctrl.alertMessage && $ctrl.alertMessageKey" translate="{{$ctrl.alertMessageKey}}"></small>' + "</div>" + "</div>" + "</div>"
+        template: '<div flex="100" layout="column" class="ch-loading-progress text-center {{$ctrl.contClass}}">' + '<div ng-if="!$ctrl.errorMessage && !$ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + '<div ng-if="!$ctrl.iconClass">' + '<md-progress-circular class="ch-progress-white" md-mode="indeterminate" md-diameter="{{$ctrl.progressDiameter}}"></md-progress-circular>' + "</div>" + '<div ng-if="$ctrl.iconClass">' + '<md-icon class="material-icons {{$ctrl.iconClass}}"></md-icon>' + "</div>" + '<div ng-if="$ctrl.message || $ctrl.messageKey" class="text-center">' + '<span ng-if="$ctrl.message" ng-bind="$ctrl.message"></span>' + '<span ng-if="!$ctrl.message && $ctrl.messageKey" translate="{{$ctrl.messageKey}}"></span>' + "</div>" + "</div>" + '<div ng-if="$ctrl.errorMessage || $ctrl.errorMessageKey" flex layout="column" layout-padding layout-align="center center">' + "<div>" + '<md-icon class="material-icons {{$ctrl.errorIconClass}}"></md-icon>' + "</div>" + '<div class="md-display-2">Oops...</div>' + "<div>" + '<span ng-if="$ctrl.errorMessage" ng-bind="$ctrl.errorMessage"></span>' + '<span ng-if="!$ctrl.errorMessage && $ctrl.errorMessageKey" translate="{{$ctrl.errorMessageKey}}"></span>' + "</div>" + "</div>" + '<div ng-if="$ctrl.hideAlert" layout="column" layout-padding layout-align="center center">' + '<div ng-if="$ctrl.alertMessage || $ctrl.alertMessageKey" class="text-center">' + '<small ng-if="$ctrl.alertMessage" ng-bind="$ctrl.alertMessage"></small>' + '<small ng-if="!$ctrl.alertMessage && $ctrl.alertMessageKey" translate="{{$ctrl.alertMessageKey}}">Don\'t close this window</small>' + "</div>" + "</div>" + "</div>"
     });
     function LoadingProgressCtrl($scope, $element, $mdUtil) {
         var ctrl = this;
@@ -888,24 +921,39 @@
         this.supported = function() {
             var supported = [];
             var it = {
-                iso: "it",
+                iso: "it-IT",
                 label: $translate.instant("language.italian"),
+                language: "it",
                 flag: "it"
             };
             var en = {
-                iso: "en",
+                iso: "en-GB",
                 label: $translate.instant("language.english"),
+                language: "en",
                 flag: "gb"
             };
             supported = [ it, en ];
             return supported;
+        };
+        this.load = function() {
+            var deferred = $q.defer();
+            $$service.API.get().$promise.then(function(response) {
+                var locale = $$service.get(response.lang);
+                if (_.isNil(locale)) {
+                    locale = $$service.get(AppOptions.defaultLang);
+                }
+                $$service.$save(locale);
+                deferred.resolve(locale);
+            }, function(response) {
+                deferred.reject("Error applying user locale: " + (response.data ? response.data.message : ""));
+            });
+            return deferred.promise;
         };
         this.current = function() {
             var lang = $cookies.get($$service.$$cookieName);
             if (_.isNil(lang)) {
                 lang = $window.navigator.language || $window.navigator.userLanguage;
             }
-            lang = lang.split("-")[0];
             var locale = $$service.get(lang);
             if (_.isNil(locale)) {
                 locale = $$service.get(AppOptions.defaultLang);
@@ -916,43 +964,68 @@
             if (_.isNil(lang)) {
                 return null;
             }
-            lang = lang.split("-")[0];
             var supportedLocales = $$service.supported();
-            var idx;
-            for (idx in supportedLocales) {
-                var locale = supportedLocales[idx];
-                if (_.isEqual(locale.iso, lang)) {
-                    return locale;
-                }
+            var locale = _.find(supportedLocales, [ "iso", lang ]);
+            if (!locale) {
+                locale = _.find(supportedLocales, function(l) {
+                    return lang.split("-")[0] == l.language;
+                });
             }
-            return null;
+            return locale;
         };
         this.set = function(lang) {
-            if (_.isNil(lang)) {
-                lang = $cookies.get($$service.$$cookieName);
-                if (_.isNil(lang)) {
-                    lang = $window.navigator.language || $window.navigator.userLanguage;
-                }
-            }
-            lang = lang.split("-")[0];
             var deferred = $q.defer();
-            var locale = $$service.get(lang);
-            if (_.isNil(locale)) {
-                deferred.reject("Language not supported: " + lang);
-                return deferred.promise;
+            var data = {};
+            if (!_.isNil(lang)) {
+                var locale = $$service.get(lang);
+                if (_.isNil(locale)) {
+                    deferred.reject("Language not supported: " + lang);
+                    return deferred.promise;
+                }
+                data = {
+                    lang: locale.iso
+                };
             }
-            $$service.API.save({
-                lang: lang
-            }).$promise.then(function(response) {
-                $translate.use(lang);
-                tmhDynamicLocale.set(lang);
-                amMoment.changeLocale(lang);
-                $cookies.put($$service.$$cookieName, locale.iso);
-                deferred.resolve($$service.current());
+            $$service.API.save(data).$promise.then(function(response) {
+                locale = $$service.get(response.lang);
+                $$service.$save(locale);
+                deferred.resolve(locale);
             }, function(response) {
                 deferred.reject("Error setting locale: " + (response.data ? response.data.message : ""));
             });
             return deferred.promise;
+        };
+        this.$save = function(locale) {
+            $translate.use(locale.language);
+            tmhDynamicLocale.set(locale.language);
+            amMoment.changeLocale(locale.language);
+            AppOptions.currentLang = locale.iso;
+            $cookies.put($$service.$$cookieName, locale.iso);
+        };
+        this.list = function() {
+            var deferred = $q.defer();
+            $http.get("/resources/public/js/data/json/locales-list.json").then(function(response) {
+                deferred.resolve(response.data);
+                $$service.localesList = response.data;
+            }, function(response) {
+                deferred.reject("Error loading locales list");
+            });
+            return deferred.promise;
+        };
+        this.getLocale = function(iso2code) {
+            var locale;
+            if (!$$service.localesList) {
+                $$service.list().then(function(data) {
+                    locale = _.find(data, function(o) {
+                        return o["1"] == iso2code;
+                    });
+                });
+            } else {
+                locale = _.find($$service.localesList, function(o) {
+                    return o["1"] == iso2code;
+                });
+            }
+            return locale;
         };
     }
 })();
@@ -1333,9 +1406,9 @@
 
 (function() {
     "use strict";
-    TransitionsListenerFactory.$inject = [ "$transitions", "$translate", "$log", "$mdDialog", "InitSrv", "AppOptions", "Navigator", "Loading", "LoadingProgress" ];
+    TransitionsListenerFactory.$inject = [ "$transitions", "$translate", "$log", "$mdDialog", "$location", "InitSrv", "AppOptions", "Navigator", "Loading", "LoadingProgress" ];
     angular.module("itaca.services").factory("TransitionsListener", TransitionsListenerFactory);
-    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
+    function TransitionsListenerFactory($transitions, $translate, $log, $mdDialog, $location, InitSrv, AppOptions, Navigator, Loading, LoadingProgress) {
         var $$service = {};
         $$service.$$deregisters = {
             onBefore: [],
