@@ -132,27 +132,38 @@
     	$$service.top = function(setOnload){
     		window.scrollTo(0, 0);
     		
-    		if (setOnload) {
-    			window.onload = function(){
-    				window.scrollTo(0, 0);
-    			};
-    		}
-    	};
-    	
-    	$$service.topAnimated = function(setOnload, behavior) {
-    		window.scrollTo({
-    			left: 0, 
-    			top: 0,
-    			"behavior": behavior || 'smooth'
+    		_.forEach(document.querySelectorAll('*[ui-view]'), function(el){
+    			el.scrollTop = 0;
     		});
     		
     		if (setOnload) {
     			window.onload = function(){
-    				window.scrollTo({
-    	    			left: 0, 
-    	    			top: 0,
-    	    			"behavior": behavior || 'smooth'
+    				window.scrollTo(0, 0);
+    				
+    				_.forEach(document.querySelectorAll('*[ui-view]'), function(el){
+    					el.scrollTop = 0;
     	    		});
+    			};
+    		}
+    	};
+    	
+    	$$service.topAnimated = function(setOnload) {
+    		$$service.scrollToAnimated(document.body, 0, 1250);
+//    		$document.scrollTopAnimated(0);
+    		
+    		_.forEach(document.querySelectorAll('*[ui-view]'), function(el){
+    			el.scrollTop = 0;
+    		});
+    		
+    		if (setOnload) {
+    			window.onload = function(){
+//    				$document.scrollTopAnimated(0);
+    				$$service.scrollToAnimated(document.body, 0, 1250);
+    				
+    				_.forEach(document.querySelectorAll('*[ui-view]'), function(el){
+    					el.scrollTop = 0;
+    	    		});
+    				
     			};
     		}
     	};
