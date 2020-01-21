@@ -10,7 +10,7 @@
     function ConfigFactory($resource, $q) {			
     	var $$service = {};
     	
-    	$$service.url = "/api/rs/secure/config";
+    	$$service.url = "/api/rs/public/config";
     	
     	var methods = {
     		amazon: {method: "GET", url: $$service.url + "/amz"},
