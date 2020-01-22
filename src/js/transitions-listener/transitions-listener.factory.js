@@ -31,6 +31,14 @@
     					AppOptions.page.title = title;
     				}, _.stubFalse);						
     	
+    			} else if (_.includes(transition.getResolveTokens(), "titleKey")) {
+    				transition.injector().getAsync("titleKey").then(function(titleKey) {
+    					$translate(titleKey).then(function(message) {
+        					AppOptions.page = AppOptions.page || {};
+        					AppOptions.page.title = message;
+        				}, _.stubFalse);
+    				}, _.stubFalse);
+    				
     			} else if (toState.data && toState.data.titleKey) {
     				$translate(angular.isFunction(toState.data.titleKey) ? toState.data.titleKey() : toState.data.titleKey).then(function(message) {
     					AppOptions.page = AppOptions.page || {};
