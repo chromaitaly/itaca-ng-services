@@ -40,19 +40,23 @@
 			}
 		};
 
-		this.$get = /* @ngInject */ function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, CURRENCY_ID) {
-			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, $$cookieName, $$ratesCookieName, CURRENCY_ID);
+		this.$get = /* @ngInject */ function($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, DateUtils, CURRENCY_ID) {
+			return new Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, DateUtils, $$cookieName, $$ratesCookieName, CURRENCY_ID);
 		};
 	}
     
-    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, cookieName, ratesCookieName, accessKey){
+    function Currency($log, $cookies, $q, $resource, localStorageService, iso4217, AppOptions, DateUtils, cookieName, ratesCookieName, accessKey){
 	 	var $$service = this;
 	 	
 	 	this.$$cookieName = cookieName;
 	 	this.$$ratesCookieName = ratesCookieName;
 	 	this.$$accessKey = accessKey;
 	 	
-    	this.API = $resource("https://data.fixer.io/api/latest", {access_key: $$service.$$accessKey});
+		var methods = {
+				get: {method:'GET', url: $$service.url, headers: { 'Content-Type': undefined, 'x-requested-with': undefined}},
+		};
+		
+		this.API = $resource("https://data.fixer.io/api/latest", {access_key: $$service.$$accessKey}, methods);
 	 	
 	 	this.current = {iso : 'EUR', symbol: "€", rate : 1};
 	 	
@@ -169,21 +173,35 @@
 	 		
 	 		var currencyRateList = localStorageService.get($$service.$$ratesCookieName);
 	 		
-	 		if (!_.isArray(currencyRateList)) {
+	 		if (_.isNil(currencyRateList) || !_.isArray(currencyRateList)) {
 	 			currencyRateList = [];
 	 			localStorageService.remove($$service.$$ratesCookieName);
+//	 		if (!_.isArray(currencyRateList)) {
+//	 			currencyRateList = [];
+//	 			localStorageService.remove($$service.$$ratesCookieName);
 	 		
 	 		} else {
-	 			var expired = _.some(currencyRateList, function(value) {
+	 			
+//	 			var expired = _.some(currencyRateList, function(value) {
+	 			_.remove(currencyRateList, function(value) {
 	 				if (_.isNil(value.date)) {
 	 					return true;
-	 				}				
-	 				var m = moment.isDate(value.date) ? moment(value.date) : moment(value.date, "YYYY-MM-DD");  
+	 				}	
+	 				
+	 				// Converto la data per compatilità UTC - SERVER
+	 				var dateObj = {date: angular.copy(value.date)}; 
+	 				DateUtils.convertDateStringsToDates(dateObj);
+	 				
+	 				var m = moment.isDate(dateObj.date) ? moment(dateObj.date).utc(true).local() : moment(dateObj.date, "YYYY-MM-DD");
 	 				return m.isBefore(moment(), "days");
 	 			});
 	 			
-	 			if (expired) {
-	 				currencyRateList = [];
+//	 			if (expired) {
+//	 				currencyRateList = [];
+////	 				localStorageService.remove($$service.$$ratesCookieName);
+//	 			}
+	 			
+	 			if (!currencyRateList) {
 	 				localStorageService.remove($$service.$$ratesCookieName);
 	 			}
 	 		}
@@ -245,21 +263,26 @@
 	 		
 	 		var currencyRateList = localStorageService.get($$service.$$ratesCookieName);
 	 		
-	 		if (!_.isArray(currencyRateList)) {
+	 		if (_.isNil(currencyRateList) || !_.isArray(currencyRateList)) {
 	 			currencyRateList = [];
 	 			localStorageService.remove($$service.$$ratesCookieName);
 	 		
 	 		} else {
-	 			var expired = _.some(currencyRateList, function(value) {
+	 			
+	 			_.remove(currencyRateList, function(value) {
 	 				if (_.isNil(value.date)) {
 	 					return true;
-	 				}				
-	 				var m = moment.isDate(value.date) ? moment(value.date) : moment(value.date, "YYYY-MM-DD");  
-	 				return m.isBefore(moment(), "days");
+	 				}		
+	 				
+	 				// Converto la data per compatilità UTC - SERVER
+	 				var dateObj = {date: angular.copy(value.date)}; 
+	 				DateUtils.convertDateStringsToDates(dateObj);
+	 				
+	 				var m = moment.isDate(dateObj.date) ? moment(dateObj.date).utc(true).local() : moment(dateObj.date, "YYYY-MM-DD");
+	 				return m.isBefore(moment(), 'days');
 	 			});
 	 			
-	 			if (expired) {
-	 				currencyRateList = [];
+	 			if (!currencyRateList) {
 	 				localStorageService.remove($$service.$$ratesCookieName);
 	 			}
 	 		}
