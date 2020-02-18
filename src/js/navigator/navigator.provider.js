@@ -192,7 +192,10 @@
     	$$service.closeLeftMenu = function(keepClosed) {
     		$q.when($mdSidenav('leftMenu', true)).then(function(instance) {
     			instance.close();
-	    		!_.isNil(keepClosed) && (AppOptions.hideLeftMenu = keepClosed);
+    			if (_.isBoolean(keepClosed)) {
+    				AppOptions.hideLeftMenu = keepClosed;
+    				$rootScope.$broadcast(keepClosed ? 'left-menu-closed' : 'left-menu-open');
+    			}
     		});
     	};
     	
