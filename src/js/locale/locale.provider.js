@@ -30,12 +30,12 @@
 			}
 		};
 
-		this.$get = /* @ngInject */ function($cookies, $window, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions) {
-			return new Locale($cookies, $window, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions, $$cookieName, $$url);
+		this.$get = /* @ngInject */ function($cookies, $window, $http, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions) {
+			return new Locale($cookies, $window, $http, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions, $$cookieName, $$url);
 		};
 	}
     
-    function Locale($cookies, $window, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions, cookieName, url){
+    function Locale($cookies, $window, $http, $translate, tmhDynamicLocale, amMoment, $q, $resource, AppOptions, cookieName, url){
     	var $$service = this;
     	
     	this.$$cookieName = cookieName;
